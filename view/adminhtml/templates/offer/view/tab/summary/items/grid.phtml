@@ -1,0 +1,141 @@
+<?php
+/** @var Magento\Framework\Escaper $escaper */
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\Grid $block */
+/** @var Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+/** @var Magento\Catalog\Helper\Data $catalogHelper */
+
+$catalogHelper =$block->getData('catalogHelper');
+?>
+
+<?php $items = $block->getItems() ?>
+<?php if (empty($items)): ?>
+    <div id="offer-items_grid">
+        <div class="admin__table-wrapper">
+            <table class="data-table admin__table-primary order-tables">
+                <?= $block->getChildHtml('items_grid_thead') ?>
+                <tbody>
+                    <tr class="even">
+                        <td class="empty-text" colspan="100"><?= $block->escapeHtml(__('No ordered items')) ?></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php else: ?>
+    <div class="admin__table-wrapper" id="offer-items_grid">
+        <table class="data-table admin__table-primary order-tables">
+
+            <?= $block->getChildHtml('summary_items_grid_thead') ?>
+
+            <?php $i = 0 ?>
+            <?php foreach ($items as $item): $i++ ?>
+                <tbody class="<?= /* @noEscape */ ($i%2) ? 'even' : 'odd' ?>">
+                    <tr>
+                        <td class="col-thumbnail">
+                            <img src="<?= $escaper->escapeUrl($block->getProductImageUrl($item->getProduct())); ?>" />
+                        </td>
+
+                        <td class="col-product">
+                                <span id="order_item_<?= (int) $item->getId() ?>_title"><?=
+                                    $block->escapeHtml($item->getName()) ?></span>
+                            <div class="product-sku-block">
+                                <span><?= $block->escapeHtml(__('SKU')) ?>:</span>
+                                <?= /* @noEscape */ implode(
+                                    '<br />',
+                                    $catalogHelper->splitSku($block->escapeHtml($item->getSku()))
+                                ) ?>
+                            </div>
+                            <div class="product-configure-block">
+                                <?= $block->getConfigureButtonHtml($item) ?>
+                            </div>
+                        </td>
+
+                        <td class="col-price">
+                            <?= /* @noEscape */ sprintf("%.2f", $block->getOriginalEditablePrice($item)) ?>
+                        </td>
+                        <td class="col-qty">
+                            <?= (float) $item->getQty() ?>
+                        </td>
+
+
+                        <td class="col-price col-row-subtotal">
+                            <?= $block->getTotalAmount($item) ?>
+                        </td>
+
+                        <td class="col-setup col-row-setup"
+                            data-product-config='<?= $block->escapeHtml(json_encode([
+                                'id' => $item->getId(),
+                                'name' => $item->getName(),
+                                'sku' => $item->getSku(),
+                                'qty' => $item->getQty(),
+                            ])) ?>'>
+                            <a href="javascript:void(0)" class="action-configure-item">View</a>
+                        </td>
+
+                    </tr>
+                </tbody>
+            <?php endforeach; ?>
+        </table>
+
+    </div>
+
+
+    <script>
+        /*require(['jquery', 'mage/mage'], function ($) {
+            $(document).on('click', '.action-configure-item', function (e) {
+                e.preventDefault();
+                const $row = $(this).closest('td');
+                const configData = $row.data('product-config');
+
+                if (!configData) {
+                    alert('No config data found');
+                    return;
+                }
+
+                let itemId = configData.id;
+
+                // Заполняем попап
+                const $popup = $('#custom-options-popup');
+                $popup.find('.popup-title').text('Configure: ' + configData.name);
+
+                $popup.find('[data-field]').each(function () {
+                    let field = $(this).data('field'); // например, 'name'
+                    let value = configData[field]; // берём значение из объекта
+                    let inputId = 'configure_item_' + field + '_' + itemId;
+
+                    // Обновляем label
+                    $(this).find('label').attr('for', inputId);
+
+                    // Обновляем input
+                    $(this).find('input')
+                        .attr('id', inputId)
+                        .attr('name', 'item[' + itemId + '][' + field + ']')
+                        .val(value);
+                });
+
+
+                // Показываем попап
+                $popup.modal({
+                    title: 'Configure Product',
+                    buttons: [{
+                        text: $.mage.__('Close'),
+                        class: 'action-secondary',
+                        click: function () {
+                            this.closeModal();
+                        }
+                    }, {
+                        text: $.mage.__('Save'),
+                        class: 'action-primary',
+                        click: function () {
+                            const formData = $('#custom-options-form').serializeArray();
+                            console.log('Submit options:', formData);
+                            this.closeModal();
+                        }
+                    }]
+                }).modal('openModal');
+            });
+        });*/
+    </script>
+
+
+<?php endif; ?>

@@ -1,0 +1,65 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Totals $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+<legend class="admin__legend"><span><?= $escaper->escapeHtml(__('Offer Totals')) ?></span></legend>
+<br>
+
+<table class="admin__table-secondary data-table">
+    <tbody>
+    <?= /* @noEscape  */ $block->renderTotals(); ?>
+    <?= /* @noEscape  */ $block->renderTotals('footer'); ?>
+    </tbody>
+</table>
+
+<div class="quote-totals-actions">
+    <div class="actions">
+        <?php if ($block->displaySubmitQuoteButton()): ?>
+            <?= $block->getButtonHtml(
+                __('Submit Offer'),
+                'jQuery("#edit_form").attr("action", jQuery("#edit_form").attr("data-send-action")); quote.submit()',
+                'save primary'
+            ); ?>
+        <?php endif; ?>
+
+        <?php
+        $pdfUrl = $block->getUrl('quotation/quote/pdf', ['quote_id' => $block->getQuote()->getId()]);
+        echo $block->getButtonHtml(
+            __('Preview Offer PDF'),
+            'location.href="' . $escaper->escapeHtml($pdfUrl) . '"',
+            'action-default scalable quote-pdf',
+            'quote-pdf'
+        );
+        ?>
+        <fieldset id="quote-convert" class="admin__fieldset quote-convert">
+            <?= $block->getChildHtml('convert') ?>
+        </fieldset>
+    </div>
+</div>
+
+<script>
+    require(['prototype'], function () {
+
+//<![CDATA[
+        var sendEmailCheckbox = $('send_confirmation');
+        if (sendEmailCheckbox) {
+            Event.observe(sendEmailCheckbox, 'change', notifyCustomerUpdate);
+            notifyCustomerUpdate();
+        }
+
+        function notifyCustomerUpdate() {
+            var sendEmailCheckbox = $('send_confirmation');
+            var notifyCustomerCheckbox = $('notify_customer');
+            if (!sendEmailCheckbox || !notifyCustomerCheckbox)
+                return;
+            notifyCustomerCheckbox.disabled = !sendEmailCheckbox.checked;
+        }
+
+//]]>
+
+        window.notifyCustomerUpdate = notifyCustomerUpdate;
+        window.sendEmailCheckbox = sendEmailCheckbox;
+
+    });
+</script>

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- phpcs:ignoreFile Generic.Files.LineLength -->
+
+<!--
+  ~ Copyright (c) 2024. Cart2Quote B.V. All rights reserved.
+  ~ See COPYING.txt for license details.
+  -->
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals" template="quote/view/totals.phtml" name="totals">
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\Shipping" template="Magento_Sales::order/create/totals/shipping.phtml" name="shipping_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\Discount" template="Magento_Sales::order/create/totals/default.phtml" name="discount_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\Grandtotal" template="Magento_Sales::order/create/totals/grandtotal.phtml" name="grand_total_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\OriginalSubtotal" template="quote/create/totals/originalSubtotal.phtml" name="original_subtotal_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\OriginalSubtotal" template="quote/create/totals/quoteAdjustment.phtml" name="quote_adjustment_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\Subtotal" template="Magento_Sales::order/create/totals/subtotal.phtml" name="subtotal_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Totals\Tax" template="Magento_Sales::order/create/totals/tax.phtml" name="tax_total_renderer"/>
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\CreateOrder" template="quote/view/createOrder.phtml" name="convert"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

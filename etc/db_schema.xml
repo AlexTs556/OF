@@ -1,0 +1,151 @@
+<?xml version="1.0" ?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="onemovetwo_offers" resource="default" engine="innodb" comment="OneMoveTwo Offers">
+        <column name="entity_id" xsi:type="int" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column name="offer_number" xsi:type="varchar" nullable="false" length="32" comment="Offer Number"/>
+        <column name="offer_name" xsi:type="varchar" nullable="false" length="32" comment="Offer Name"/>
+        <column name="quote_id" xsi:type="int" unsigned="true" nullable="true" comment="Converted Quote ID"/>
+        <column name="order_id" xsi:type="int" unsigned="true" nullable="true" comment="Converted Order ID"/>
+        <column name="customer_id" xsi:type="int" unsigned="true" nullable="true" comment="Customer ID"/>
+        <column name="customer_is_guest" xsi:type="boolean" nullable="false" default="false" comment="Is Guest Customer"/>
+        <column name="customer_email" xsi:type="varchar" nullable="true" length="255" comment="Customer Email"/>
+        <column name="customer_name" xsi:type="varchar" nullable="true" length="255" comment="Customer Name"/>
+        <column name="status" xsi:type="varchar" nullable="false" length="32" default="draft" comment="Status"/>
+        <column name="version" xsi:type="smallint" unsigned="true" nullable="false" default="1" comment="Version"/>
+        <column name="parent_offer_id" xsi:type="int" unsigned="true" nullable="true" comment="Parent Offer ID"/>
+        <column name="admin_creator_id" xsi:type="int" unsigned="true" nullable="false" comment="Admin Creator ID"/>
+        <column name="store_id" xsi:type="smallint" unsigned="true" nullable="false" comment="Store ID"/>
+        <column name="subtotal" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Subtotal"/>
+        <column name="discount_amount" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Discount Amount"/>
+        <column name="shipping_amount" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Shipping Amount"/>
+        <column name="tax_amount" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Tax Amount"/>
+        <column name="grand_total" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Grand Total"/>
+        <column name="prepayment_amount" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Prepayment Amount"/>
+        <column name="prepayment_percent" xsi:type="decimal" scale="2" precision="5" nullable="false" default="0.00" comment="Prepayment Percent"/>
+        <column name="items_count" xsi:type="int" unsigned="true" nullable="false" default="0" comment="Items Count"/>
+        <column name="items_qty" xsi:type="decimal" scale="4" precision="12" nullable="false" default="0.0000" comment="Items Qty"/>
+        <column name="expiry_date" xsi:type="datetime" nullable="true" comment="Expiry Date"/>
+        <column name="created_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column name="updated_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="UNQ_OFFER_NUMBER">
+            <column name="offer_number"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_CUSTOMER_ID"
+                    table="onemovetwo_offers" column="customer_id"
+                    referenceTable="customer_entity" referenceColumn="entity_id"
+                    onDelete="SET NULL"/>
+        <index referenceId="IDX_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+    </table>
+
+    <table name="onemovetwo_offers_item" resource="default" engine="innodb" comment="Offer Items">
+        <column name="item_id" xsi:type="int" unsigned="true" nullable="false" identity="true" comment="Item ID"/>
+        <column name="offer_id" xsi:type="int" unsigned="true" nullable="false" comment="Offer ID"/>
+        <column name="product_id" xsi:type="int" unsigned="true" nullable="false" comment="Product ID"/>
+        <column name="sku" xsi:type="varchar" nullable="false" length="64" comment="SKU"/>
+        <column name="name" xsi:type="varchar" nullable="false" length="255" comment="Product Name"/>
+        <column name="qty" xsi:type="decimal" scale="4" precision="12" nullable="false" default="1.0000" comment="Qty"/>
+        <column name="price" xsi:type="decimal" scale="4" precision="20" nullable="false" comment="Price"/>
+        <column name="base_price" xsi:type="decimal" scale="4" precision="20" nullable="true" comment="Base Price"/>
+        <column name="discount_percent" xsi:type="decimal" scale="2" precision="5" nullable="true" comment="Discount Percent"/>
+        <column name="discount_amount" xsi:type="decimal" scale="4" precision="20" nullable="true" comment="Discount Amount"/>
+        <column name="row_total" xsi:type="decimal" scale="4" precision="20" nullable="false" comment="Row Total"/>
+        <column name="is_optional" xsi:type="boolean" nullable="false" default="false" comment="Is Optional"/>
+        <column name="has_custom_options" xsi:type="boolean" nullable="false" default="false" comment="Has Custom Options"/>
+        <column name="product_options" xsi:type="text" nullable="true" comment="Product Options"/>
+        <column name="additional_options" xsi:type="text" nullable="true" comment="Additional Options"/>
+        <column name="created_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column name="updated_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="item_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_OFFER_ID"
+                    table="onemovetwo_offers_item" column="offer_id"
+                    referenceTable="onemovetwo_offers" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+        <index referenceId="IDX_OFFER_ID" indexType="btree">
+            <column name="offer_id"/>
+        </index>
+        <index referenceId="IDX_PRODUCT_ID" indexType="btree">
+            <column name="product_id"/>
+        </index>
+    </table>
+
+    <table name="onemovetwo_offers_history" resource="default" engine="innodb" comment="Offer Status History">
+        <column name="history_id" xsi:type="int" unsigned="true" nullable="false" identity="true" comment="History ID"/>
+        <column name="offer_id" xsi:type="int" unsigned="true" nullable="false" comment="Offer ID"/>
+        <column name="status" xsi:type="varchar" nullable="true" length="32" comment="Status"/>
+        <column name="comment" xsi:type="text" nullable="true" comment="Comment"/>
+        <column name="is_customer_notified" xsi:type="boolean" nullable="false" default="false" comment="Is Customer Notified"/>
+        <column name="visible_on_storefront" xsi:type="boolean" nullable="false" default="false" comment="Visible on Storefront"/>
+        <column name="created_by_id" xsi:type="int" unsigned="true" nullable="true" comment="Created By ID"/>
+        <column name="created_by_name" xsi:type="varchar" nullable="true" length="255" comment="Created By Name"/>
+        <column name="created_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="history_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_OFFER_HISTORY_OFFER_ID"
+                    table="onemovetwo_offers_history" column="offer_id"
+                    referenceTable="onemovetwo_offers" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+
+        <index referenceId="IDX_OFFER_HISTORY_OFFER_ID" indexType="btree">
+            <column name="offer_id"/>
+        </index>
+        <index referenceId="IDX_OFFER_HISTORY_CREATED_AT" indexType="btree">
+            <column name="created_at"/>
+        </index>
+    </table>
+
+    <table name="onemovetwo_offers_attachments" resource="default" engine="innodb" comment="Offer Attachments">
+        <column name="attachment_id" xsi:type="int" unsigned="true" nullable="false" identity="true" comment="Attachment ID"/>
+        <column name="offer_id" xsi:type="int" unsigned="true" nullable="false" comment="Offer ID"/>
+        <column name="file_path" xsi:type="varchar" nullable="false" length="255" comment="File Path"/>
+        <column name="file_name" xsi:type="varchar" nullable="false" length="255" comment="Original File Name"/>
+        <column name="file_type" xsi:type="varchar" nullable="false" length="64" comment="MIME Type"/>
+        <column name="sort_order" xsi:type="int" unsigned="true" nullable="false" default="0" comment="Sort Order"/>
+        <column name="created_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column name="updated_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="attachment_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_OFFER_ATTACHMENTS_OFFER_ID"
+                    table="onemovetwo_offers_attachments" column="offer_id"
+                    referenceTable="onemovetwo_offers" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+
+        <index referenceId="IDX_OFFER_ATTACHMENTS_OFFER_ID" indexType="btree">
+            <column name="offer_id"/>
+        </index>
+    </table>
+
+    <table name="onemovetwo_offers_items_attachments" resource="default" engine="innodb" comment="Offer Items Attachments">
+        <column name="attachment_id" xsi:type="int" unsigned="true" nullable="false" identity="true" comment="Attachment ID"/>
+        <column name="offer_items_id" xsi:type="int" unsigned="true" nullable="false" comment="Offer Items ID"/>
+        <column name="file_path" xsi:type="varchar" nullable="false" length="255" comment="File Path"/>
+        <column name="file_name" xsi:type="varchar" nullable="false" length="255" comment="Original File Name"/>
+        <column name="file_type" xsi:type="varchar" nullable="false" length="64" comment="MIME Type"/>
+        <column name="sort_order" xsi:type="int" unsigned="true" nullable="false" default="0" comment="Sort Order"/>
+        <column name="created_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column name="updated_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="attachment_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_OFFER_ITEM_ATTACHMENTS_OFFER_ITEM_ID"
+                    table="onemovetwo_offers_items_attachments" column="offer_items_id"
+                    referenceTable="onemovetwo_offers_item" referenceColumn="item_id"
+                    onDelete="CASCADE"/>
+
+        <index referenceId="IDX_OFFER_ITEM_ATTACHMENTS_OFFER_ITEM_ID" indexType="btree">
+            <column name="offer_items_id"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,24 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferItems $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+<?php $offer = $block->getOffer() ?>
+
+<div id="edit_form"
+      data-offer-config="<?= $escaper->escapeHtml($block->getOfferDataJson()) ?>"
+      data-load-base-url="<?= $escaper->escapeHtml($block->getLoadBlockUrl($offer->getId())) ?>"
+      data-send-action="<?= $escaper->escapeHtml($block->getSendUrl()) ?>"
+      data-default-action="<?= $escaper->escapeHtml($block->getSaveUrl()) ?>"
+      action="<?= $escaper->escapeHtml($block->getSaveUrl()) ?>"
+      method="post"
+      enctype="multipart/form-data">
+    <?= $block->getBlockHtml('formkey') ?>
+
+    <input type="hidden" name="offer_id" value="<?= $escaper->escapeHtml($offer->getId()) ?>"/>
+
+    <div id="offer-data" class="offer-data">
+        <?= $block->getChildHtml('offer_data') ?>
+    </div>
+
+</div>
+

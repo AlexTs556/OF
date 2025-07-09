@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="sales_order_create_index"/>
+    <body>
+        <referenceBlock name="content">
+            <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\Create" name="offer_content">
+                <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\Create\Form" template="Magento_Sales::order/create/form.phtml" name="offer_create_form" as="form">
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Messages" name="message"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Customer" template="Magento_Sales::order/create/abstract.phtml" name="customer.grid.container"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Store" template="Magento_Sales::order/create/abstract.phtml" name="store">
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Store\Select" template="Magento_Sales::order/create/store/select.phtml" name="select"/>
+                    </block>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Data" template="OneMoveTwo_Offers::offer/create/data.phtml" name="data">
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Form\Account" template="Magento_Sales::order/create/form/account.phtml" name="form_account"/>
+                        <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\Create\Shipping\Address" template="Magento_Sales::order/create/form/address.phtml" name="shipping_address"/>
+                        <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\Create\Billing\Address" template="Magento_Sales::order/create/form/address.phtml" name="billing_address"/>
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Shipping\Method" template="Magento_Sales::order/create/abstract.phtml" name="shipping_method">
+                            <block class="Magento\Sales\Block\Adminhtml\Order\Create\Shipping\Method\Form" template="OneMoveTwo_Offers::offer/create/shipping/method/form.phtml" name="order_create_shipping_form" as="form"/>
+                        </block>
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Newsletter" template="Magento_Sales::order/create/abstract.phtml" name="newsletter">
+                            <block class="Magento\Sales\Block\Adminhtml\Order\Create\Newsletter\Form" template="Magento_Sales::order/create/newsletter/form.phtml" name="order_create_newsletter_form" as="form"/>
+                        </block>
+                        <block class="Magento\Backend\Block\Template" name="gift_options" template="Magento_Sales::order/giftoptions.phtml">
+                            <block class="Magento\Sales\Block\Adminhtml\Order\Create\Giftmessage" template="Magento_Sales::order/create/giftmessage.phtml" name="giftmessage"/>
+                        </block>
+                        <block class="Magento\Framework\View\Element\Text\ListText" name="order_item_extra_info"/>
+                    </block>
+                </block>
+            </block>
+        </referenceBlock>
+    </body>
+</page>
+
+<!--
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="sales_order_create_index"/>
+    <body>
+        <referenceBlock name="content">
+            <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\Create" name="order_content">
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\Create\Form" template="Magento_Sales::order/create/form.phtml" name="order_create_form" as="form">
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Messages" name="message"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Customer" template="Magento_Sales::order/create/abstract.phtml" name="customer.grid.container"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Store" template="Magento_Sales::order/create/abstract.phtml" name="store">
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Store\Select" template="Magento_Sales::order/create/store/select.phtml" name="select"/>
+                    </block>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Data" template="Cart2Quote_Quotation::quote/create/data.phtml" name="data">
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Form\Account" template="Magento_Sales::order/create/form/account.phtml" name="form_account"/>
+                        <block class="Cart2Quote\Quotation\Block\Adminhtml\Order\Create\Shipping\Address" template="Magento_Sales::order/create/form/address.phtml" name="shipping_address"/>
+                        <block class="Cart2Quote\Quotation\Block\Adminhtml\Order\Create\Billing\Address" template="Magento_Sales::order/create/form/address.phtml" name="billing_address"/>
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Shipping\Method" template="Magento_Sales::order/create/abstract.phtml" name="shipping_method">
+                            <block class="Magento\Sales\Block\Adminhtml\Order\Create\Shipping\Method\Form" template="Cart2Quote_Quotation::quote/create/shipping/method/form.phtml" name="order_create_shipping_form" as="form"/>
+                        </block>
+                        <block class="Magento\Sales\Block\Adminhtml\Order\Create\Newsletter" template="Magento_Sales::order/create/abstract.phtml" name="newsletter">
+                            <block class="Magento\Sales\Block\Adminhtml\Order\Create\Newsletter\Form" template="Magento_Sales::order/create/newsletter/form.phtml" name="order_create_newsletter_form" as="form"/>
+                        </block>
+                        <block class="Magento\Backend\Block\Template" name="gift_options" template="Magento_Sales::order/giftoptions.phtml">
+                            <block class="Magento\Sales\Block\Adminhtml\Order\Create\Giftmessage" template="Magento_Sales::order/create/giftmessage.phtml" name="giftmessage"/>
+                        </block>
+                        <block class="Magento\Framework\View\Element\Text\ListText" name="order_item_extra_info"/>
+                    </block>
+                </block>
+            </block>
+        </referenceBlock>
+    </body>
+</page>
+
+
+-->

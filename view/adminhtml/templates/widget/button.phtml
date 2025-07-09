@@ -1,0 +1,14 @@
+<?php
+/** @var \Cart2Quote\Quotation\Block\Widget\Button $block*/
+/** @var Magento\Framework\Escaper $escaper */
+?>
+<?= $block->getBeforeHtml() ?>
+<button <?= /* @noEscape */ $block->getAttributesHtml(), $block->getUiId() ?>>
+    <?php if ($block->getLabelInSpan()): ?>
+        <span><?= $escaper->escapeHtml($block->getLabel()) ?></span>
+    <?php else: ?>
+        <?= $escaper->escapeHtml($block->getLabel()) ?>
+    <?php endif; ?>
+</button>
+ffffffffffffffffffffddddddddddd
+<?= $block->getAfterHtml() ?>

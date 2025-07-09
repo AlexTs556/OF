@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferInterface" type="OneMoveTwo\Offers\Model\Data\Offer"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferItemInterface" type="OneMoveTwo\Offers\Model\Data\OfferItem"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferHistoryInterface" type="OneMoveTwo\Offers\Model\Data\OfferHistory"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferAttachmentInterface" type="OneMoveTwo\Offers\Model\Data\OfferAttachment"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferItemAttachmentInterface" type="OneMoveTwo\Offers\Model\Data\OfferItemAttachment"/>
+
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferItemSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferHistorySearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+
+    <preference for="OneMoveTwo\Offers\Api\OfferRepositoryInterface" type="OneMoveTwo\Offers\Model\OfferRepository"/>
+    <preference for="OneMoveTwo\Offers\Api\OfferItemRepositoryInterface" type="OneMoveTwo\Offers\Model\OfferItemRepository"/>
+    <preference for="OneMoveTwo\Offers\Api\OfferHistoryRepositoryInterface" type="OneMoveTwo\Offers\Model\OfferHistoryRepository"/>
+
+    <preference for="OneMoveTwo\Offers\Api\OfferAttachmentRepositoryInterface" type="OneMoveTwo\Offers\Model\Repository\OfferAttachmentRepository"/>
+    <preference for="OneMoveTwo\Offers\Api\OfferItemAttachmentRepositoryInterface" type="OneMoveTwo\Offers\Model\Repository\OfferItemAttachmentRepository"/>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="offers_offer_grid_data_source" xsi:type="string">OneMoveTwo\Offers\Model\ResourceModel\Offer\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>

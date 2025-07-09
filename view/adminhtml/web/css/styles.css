@@ -1,0 +1,11 @@
+.offer-items {
+    margin-bottom: 18px;
+}
+
+.offer-search-items .data-grid .action-configure {
+    float: right;
+}
+
+.offer-search-items .data-grid .action-configure.disabled {
+    display: none;
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- phpcs:ignoreFile Generic.Files.LineLength -->
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="quotation_quote_view_item_price"/>
+    <body>
+        <referenceContainer name="content">
+            <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Data" template="quote/view/data.phtml" name="data">
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Search" template="quote/view/abstract.phtml" name="search">
+                    <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Search\Grid" name="search.grid" as="grid"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

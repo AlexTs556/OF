@@ -1,0 +1,217 @@
+<?php
+/** @var Magento\Framework\Escaper $escaper */
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\Grid $block */
+/** @var Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+/** @var Magento\Catalog\Helper\Data $catalogHelper */
+
+$catalogHelper =$block->getData('catalogHelper');
+?>
+
+<?php $items = $block->getItems() ?>
+<?php if (empty($items)): ?>
+    <div id="offer-items_grid">
+        <div class="admin__table-wrapper">
+            <table class="data-table admin__table-primary order-tables">
+                <?= $block->getChildHtml('items_grid_thead') ?>
+                <tbody>
+                    <tr class="even">
+                        <td class="empty-text" colspan="100"><?= $block->escapeHtml(__('No ordered items')) ?></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php else: ?>
+    <div class="admin__table-wrapper" id="offer-items_grid">
+        <table class="data-table admin__table-primary order-tables">
+
+            <?= $block->getChildHtml('items_grid_thead') ?>
+
+            <tfoot>
+                <tr>
+                    <th class="col-thumbnail"></th>
+                    <td class="col-total"><?= $block->escapeHtml(__('Total %1 product(s)', count($items))) ?></td>
+                    <th class="col-price"><strong><?= /* @noEscape */ $block->formatPrice($block->getSubtotal()) ?></strong></th>
+                    <td class="col-price"><strong><?= /* @noEscape */ $block->formatPrice($block->getSubtotal()) ?></strong></td>
+                    <th class="col-qty"><strong><?= count($items) ?></strong></th>
+                    <td class="col-price">
+                        <strong><?= /* @noEscape */ $block->formatPrice($block->getDiscountAmount()); ?></strong>
+                    </td>
+                    <td class="col-price">
+                        <strong><?= /* @noEscape */ $block->formatPrice($block->getSubtotalWithDiscount()); ?></strong>
+                    </td>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+            </tfoot>
+            <?php $i = 0 ?>
+            <?php foreach ($items as $item): $i++ ?>
+                <tbody class="<?= /* @noEscape */ ($i%2) ? 'even' : 'odd' ?>">
+                    <tr>
+                        <td class="col-thumbnail">
+                            <img src="<?= $escaper->escapeUrl($block->getProductImageUrl($item->getProduct())); ?>"  alt=""/>
+                        </td>
+
+                        <td class="col-product">
+                                <span id="order_item_<?= (int) $item->getId() ?>_title"><?=
+                                    $block->escapeHtml($item->getName()) ?></span>
+                            <div class="product-sku-block">
+                                <span><?= $block->escapeHtml(__('SKU')) ?>:</span>
+                                <?= /* @noEscape */ implode(
+                                    '<br />',
+                                    $catalogHelper->splitSku($block->escapeHtml($item->getSku()))
+                                ) ?>
+                            </div>
+                            <div class="product-configure-block">
+                                <?= $block->getConfigureButtonHtml($item) ?>
+                            </div>
+                        </td>
+
+                        <td class="col-original-price">
+                            <?= $item->getPrice() ?? 0 ?>
+                        </td>
+
+                        <td class="col-price">
+                            <input id="item_custom_price_<?= (int) $item->getId() ?>"
+                                   name="item[<?= (int) $item->getId() ?>][custom_price]"
+                                   value="<?= /* @noEscape */ sprintf("%.2f", $block->getOriginalEditablePrice($item)) ?>"
+                                   class="input-text item-price admin__control-text"/>
+                        </td>
+                        <td class="col-qty">
+                            <input name="item[<?= (int) $item->getId() ?>][qty]"
+                                   class="input-text item-qty admin__control-text"
+                                   value="<?= (float) $item->getQty() ?>"
+                                   maxlength="12" />
+                        </td>
+
+                        <td class="col-discount col-price">
+                            <?= /* @noEscape */ $block->formatPrice(-$item->getTotalDiscountAmount()) ?>
+                            <div class="discount-price-block">
+                                <input id="item_use_discount_<?= (int) $item->getId() ?>"
+                                       class="admin__control-checkbox"
+                                       name="item[<?= (int) $item->getId() ?>][use_discount]"
+                                       <?php if (!$item->getNoDiscount()): ?>checked="checked"<?php endif; ?>
+                                       value="1"
+                                       type="checkbox" />
+                                <label
+                                    for="item_use_discount_<?= (int) $item->getId() ?>"
+                                    class="normal admin__field-label">
+                                    <span><?= $block->escapeHtml(__('Apply')) ?></span></label>
+                            </div>
+
+                        </td>
+
+                        <td class="col-price col-row-subtotal">
+                            <?= $block->getTotalAmount($item) ?>
+                        </td>
+
+                        <td class="col-setup col-row-setup"
+                            data-product-config='<?= $block->escapeHtml(json_encode([
+                                'id' => $item->getId(),
+                                'name' => $item->getName(),
+                                'sku' => $item->getSku(),
+                                'qty' => $item->getQty(),
+                            ])) ?>'>
+                            <a href="javascript:void(0)" class="action-configure-item">Configure</a>
+                        </td>
+
+                        <td class="col-actions last">
+                            <select class="admin__control-select" name="item[<?= (int) $item->getId() ?>][action]">
+                                <option value=""><?= $block->escapeHtml(__('Please select')) ?></option>
+                                <option value="remove"><?= $block->escapeHtml(__('Remove')) ?></option>
+                                <option value="duplicate_item"><?= $block->escapeHtml(__('Duplicate item')) ?></option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <?php $hasMessageError = false; ?>
+                    <?php foreach ($item->getMessage(false) as $messageError): ?>
+                        <?php if (!empty($messageError)):
+                            $hasMessageError = true;
+                        endif; ?>
+                    <?php endforeach; ?>
+
+                    <?php if ($hasMessageError): ?>
+                        <tr class="row-messages-error">
+                            <td colspan="100"> <!-- ToDo UI: remove the 100 -->
+                                <?php foreach ($item->getMessage(false) as $message):
+                                    if (empty($message)) {
+                                        continue;
+                                    }
+                                    ?>
+                                    <div class="message <?php if ($item->getHasError()): ?>message-error<?php else:
+                                        ?>message-notice<?php endif; ?>">
+                                        <?= $block->escapeHtml($message) ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </td>
+                        </tr>
+                    <?php endif;?>
+                </tbody>
+            <?php endforeach; ?>
+        </table>
+        <p><small><?= $block->escapeHtml($block->getInclExclTaxMessage()) ?></small></p>
+    </div>
+
+    <div class="order-discounts">
+        <?= $block->getButtonHtml(__('Update Items and Quantities'), 'offer.itemsUpdate()', 'action-secondary') ?>
+    </div>
+
+    <script>
+        require(['jquery', 'mage/mage'], function ($) {
+            $(document).on('click', '.action-configure-item', function (e) {
+                e.preventDefault();
+                const $row = $(this).closest('td');
+                const configData = $row.data('product-config');
+
+                if (!configData) {
+                    alert('No config data found');
+                    return;
+                }
+
+                let itemId = configData.id;
+
+                // Заполняем попап
+                const $popup = $('#custom-options-popup');
+                $popup.find('.popup-title').text('Configure: ' + configData.name);
+
+                $popup.find('[data-field]').each(function () {
+                    let field = $(this).data('field'); // например, 'name'
+                    let value = configData[field]; // берём значение из объекта
+                    let inputId = 'configure_item_' + field + '_' + itemId;
+
+                    // Обновляем label
+                    $(this).find('label').attr('for', inputId);
+
+                    // Обновляем input
+                    $(this).find('input')
+                        .attr('id', inputId)
+                        .attr('name', 'item[' + itemId + '][' + field + ']')
+                        .val(value);
+                });
+
+
+                // Показываем попап
+                $popup.modal({
+                    title: 'Configure Product',
+                    buttons: [{
+                        text: $.mage.__('Close'),
+                        class: 'action-secondary',
+                        click: function () {
+                            this.closeModal();
+                        }
+                    }, {
+                        text: $.mage.__('Save'),
+                        class: 'action-primary',
+                        click: function () {
+                            const formData = $('#custom-options-form').serializeArray();
+                            console.log('Submit options:', formData);
+                            this.closeModal();
+                        }
+                    }]
+                }).modal('openModal');
+            });
+        });
+    </script>
+
+
+<?php endif; ?>

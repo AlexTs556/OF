@@ -1,0 +1,930 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+<style>
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Open Sans', Arial, sans-serif;
+        background-color: #f8f8f8;
+        color: #333;
+        line-height: 1.4;
+    }
+
+    .admin-form-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-header {
+        background: #f5f5f5;
+        border-bottom: 1px solid #ddd;
+        padding: 15px 20px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #303030;
+    }
+
+    .form-content {
+        padding: 20px;
+    }
+
+    .form-row {
+        display: flex;
+        margin-bottom: 20px;
+        align-items: flex-start;
+    }
+
+    .form-label {
+        width: 200px;
+        padding-right: 20px;
+        font-weight: 600;
+        color: #303030;
+        margin-top: 8px;
+        flex-shrink: 0;
+    }
+
+    .form-field {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-field-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .form-control {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 14px;
+        background: #fff;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #007bdb;
+        box-shadow: 0 0 0 2px rgba(0,123,219,0.2);
+    }
+
+    .form-control-wide {
+        width: 300px;
+    }
+
+    .form-control-medium {
+        width: 200px;
+    }
+
+    .form-control-small {
+        width: 120px;
+    }
+
+    .form-select {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 14px;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #007bdb;
+        box-shadow: 0 0 0 2px rgba(0,123,219,0.2);
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    .checkbox-container label {
+        cursor: pointer;
+        font-weight: normal;
+        color: #666;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: #007bdb;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #ccc;
+    }
+
+    .btn-secondary:hover {
+        background: #e9e9e9;
+    }
+
+    .textarea-large {
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .customer-info {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+        border: 1px solid #e5e5e5;
+    }
+
+    .customer-info-line {
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .customer-info-line:last-child {
+        margin-bottom: 0;
+    }
+
+    .action-change-address {
+        background-color: transparent;
+        border: none;
+        color: #007bdb;
+        padding-top: 2px;
+        text-decoration: none;
+    }
+
+    .file-list {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+        min-height: 60px;
+        border: 2px dashed #ddd;
+        border-radius: 3px;
+        padding: 10px;
+        transition: all 0.2s;
+    }
+
+    .file-list.drag-over {
+        border-color: #007bdb;
+        background-color: #f8f9ff;
+    }
+
+    .file-list.has-files {
+        border-style: solid;
+        background-color: #fafafa;
+    }
+
+    .datetime-input {
+        width: 180px;
+    }
+
+    .form-actions {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Стили для загрузки файлов */
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        margin: 4px 0;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .file-item:hover {
+        background-color: #e9ecef;
+    }
+
+    .file-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #333;
+    }
+
+    .file-size {
+        font-size: 0.85em;
+        color: #6c757d;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .btn-preview,
+    .btn-remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 14px;
+        transition: background-color 0.2s;
+    }
+
+    .btn-preview:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-remove:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .file-drop-zone {
+        text-align: center;
+        padding: 20px;
+        color: #999;
+        font-style: italic;
+    }
+
+    .preview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .preview-content {
+        background: white;
+        border-radius: 8px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow: hidden;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .preview-title {
+        font-weight: 500;
+    }
+
+    .preview-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px;
+    }
+
+    .preview-body {
+        padding: 16px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 70vh;
+        object-fit: contain;
+    }
+
+    .file-error-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #dc3545;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 4px;
+        z-index: 1001;
+        max-width: 300px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Стили для секции адресов */
+    .admin__page-section {
+        width: 100%;
+    }
+
+    .admin__page-section-title {
+        background: #f9f9f9;
+        padding: 12px 15px;
+        border: 1px solid #e5e5e5;
+        border-bottom: none;
+        border-radius: 3px 3px 0 0;
+        margin-bottom: 0;
+    }
+
+    .admin__page-section-title .title {
+        font-weight: 600;
+        color: #303030;
+        font-size: 16px;
+    }
+
+    .admin__page-section-content {
+        border: 1px solid #e5e5e5;
+        border-radius: 0 0 3px 3px;
+        padding: 20px;
+        background: #fff;
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .admin__page-section-item {
+        flex: 1;
+        min-width: 300px;
+        background: #fafafa;
+        border: 1px solid #e9e9e9;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .admin__page-section-item-title {
+        background: #f5f5f5;
+        padding: 10px 15px;
+        border-bottom: 1px solid #e9e9e9;
+    }
+
+    .admin__page-section-item-title .title {
+        font-weight: 600;
+        color: #303030;
+        font-size: 14px;
+    }
+
+    .admin__page-section-item-content {
+        padding: 15px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #666;
+        font-style: normal;
+    }
+
+    .admin__page-section-item-content a {
+        color: #007bdb;
+        text-decoration: none;
+    }
+
+    .admin__page-section-item-content a:hover {
+        text-decoration: underline;
+    }
+
+    .quote-shipping-address > a {
+        display: block;
+        margin-top: 15px;
+        padding: 8px 15px;
+        background: #f0f7ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 3px;
+        color: #007bdb;
+        text-decoration: none;
+        font-size: 13px;
+        transition: background-color 0.2s;
+    }
+
+    .quote-shipping-address > a:hover {
+        background: #e6f3ff;
+        text-decoration: none;
+    }
+
+    input.form-control-wide.disabled {
+        background-color: #eee;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .offer-items {
+        margin-bottom: 18px;
+    }
+
+    .offer-search-items .data-grid .action-configure {
+        float: right;
+    }
+
+    .offer-search-items .data-grid .action-configure.disabled {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .admin__page-section-content {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .admin__page-section-item {
+            min-width: auto;
+        }
+
+        .form-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-label {
+            width: auto;
+            margin-bottom: 8px;
+            margin-top: 0;
+        }
+
+        .form-control-wide,
+        .form-control-medium {
+            width: 100%;
+        }
+    }
+
+</style>
+
+<div class="admin-form-container">
+    <div class="form-header">
+        Offer Information
+    </div>
+
+    <div class="form-content">
+        <form id="offer_info" action="<?= $escaper->escapeUrl($block->getSaveInfoUrl())?>">
+
+            <?= $block->getBlockHtml('formkey') ?>
+
+            <input name="offer_id" type="hidden" value="<?= $block->getOffer()->getEntityId()?>">
+
+            <!-- Version -->
+            <div class="form-row">
+                <div class="form-label">Version</div>
+                <div class="form-field">
+                    <select class="form-select form-control-medium">
+                        <option value="1" selected>Version 1</option>
+                        <option value="2">Version 2</option>
+                        <option value="3">Version 3</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Customer -->
+            <div class="form-row">
+                <div class="form-label">Customer</div>
+                <div class="form-field">
+                    <div class="form-field-inline">
+                        <input type="text" class="form-control form-control-wide" style="background-color: rgb(238, 238, 238); opacity: 0.6; pointer-events: none;" value="<?= $block->getCustomerName()?>" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <?= $block->getChildHtml('offer_customer_address') ?>
+
+            <!-- Offer via Email -->
+            <div class="form-row">
+                <div class="form-label">Offer via Email</div>
+                <div class="form-field">
+                    <div class="checkbox-container">
+                        <input type="checkbox" name="offer_email" id="offer_email" checked>
+                        <label for="offer_email">Yes</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offer Name -->
+            <div class="form-row">
+                <div class="form-label">Offer Name</div>
+                <div class="form-field">
+                    <input type="text" name="offer_name" class="form-control form-control-wide" placeholder="Offer Name" value="<?= $block->getOffer()?->getOfferName()?>">
+                </div>
+            </div>
+
+            <!-- Offer Number -->
+            <div class="form-row">
+                <div class="form-label">Offer Number</div>
+                <div class="form-field">
+                    <div class="form-field-inline">
+                        <input
+                            type="text"
+                            class="form-control form-control-wide"
+                            name="offer_number"
+                            id="offer_number"
+                            value="<?= $block->getOffer()?->getOfferNumber()?>">
+                        <div class="checkbox-container">
+                            <input type="checkbox" name="offer_number_auto_generate" id="auto_generate" checked>
+                            <label for="auto_generate">Auto generate</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sketches -->
+            <div class="form-row">
+                <div class="form-label">Sketches</div>
+                <div class="form-field">
+                    <div class="file-list">
+                        <div class="file-drop-zone">Drag and drop files here or click the button to select.</div>
+                    </div>
+                    <button type="button" class="btn btn-secondary">Upload Files</button>
+                </div>
+            </div>
+
+            <!-- Consultant -->
+            <div class="form-row">
+                <div class="form-label">Consultant</div>
+                <div class="form-field">
+                    <input type="text" name="consultant" class="form-control form-control-wide disabled" value="<?= $block->getCurrentAdminName()?>" readonly>
+                </div>
+            </div>
+
+            <!-- Consultant Comment -->
+            <div class="form-row">
+                <div class="form-label">Consultant Comment</div>
+                <div class="form-field">
+                    <input type="text" name="comment" class="form-control form-control-wide textarea-large" placeholder="Comment" value="">
+                </div>
+            </div>
+
+            <!-- Expiry Date -->
+            <div class="form-row">
+                <div class="form-label">Expiry Date</div>
+                <div class="form-field">
+                    <input type="datetime-local" name="expiry_date" class="form-control datetime-input" value="<?=$block->getOffer()->getExpiryDate()?>">
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary">Save and Continue</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "offerInfoForm": {}
+        }
+    }
+</script>
+
+<script>
+    function updateInputState() {
+        const checkbox = document.getElementById('auto_generate');
+        const input = document.getElementById('offer_number');
+
+        if (checkbox.checked) {
+            input.readonly = true;
+            input.classList.add('disabled');
+        } else {
+            input.readonly = false;
+            input.classList.remove('disabled');
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const checkbox = document.getElementById('auto_generate');
+        checkbox.addEventListener('change', updateInputState);
+        updateInputState(); // начальное состояние
+    });
+</script>
+
+
+<script>
+    class FileUploadManager {
+        constructor() {
+            this.files = new Map();
+            this.fileIdCounter = 0;
+            this.maxFileSize = 10 * 1024 * 1024; // 10MB
+            this.allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+
+            this.init();
+        }
+
+        init() {
+            this.createFileInput();
+            this.bindEvents();
+            this.updateFileListDisplay();
+        }
+
+        createFileInput() {
+            this.fileInput = document.createElement('input');
+            this.fileInput.type = 'file';
+            this.fileInput.multiple = true;
+            this.fileInput.accept = 'image/*,.pdf';
+            this.fileInput.style.display = 'none';
+            document.body.appendChild(this.fileInput);
+        }
+
+        bindEvents() {
+            const uploadButton = document.querySelector('.btn.btn-secondary');
+            const fileList = document.querySelector('.file-list');
+
+            if (uploadButton) {
+                uploadButton.addEventListener('click', () => this.openFileDialog());
+            }
+
+            this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+
+            if (fileList) {
+                fileList.addEventListener('dragover', (e) => this.handleDragOver(e));
+                fileList.addEventListener('drop', (e) => this.handleDrop(e));
+                fileList.addEventListener('dragenter', (e) => this.handleDragEnter(e));
+                fileList.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                fileList.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('file-drop-zone')) {
+                        this.openFileDialog();
+                    }
+                });
+            }
+        }
+
+        openFileDialog() {
+            this.fileInput.click();
+        }
+
+        handleFileSelect(event) {
+            const selectedFiles = Array.from(event.target.files);
+            this.processFiles(selectedFiles);
+            this.fileInput.value = '';
+        }
+
+        handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        handleDragEnter(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        handleDragLeave(e) {
+            e.preventDefault();
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('drag-over');
+            }
+        }
+
+        handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            this.processFiles(droppedFiles);
+        }
+
+        processFiles(files) {
+            files.forEach(file => {
+                if (this.validateFile(file)) {
+                    this.addFile(file);
+                }
+            });
+            this.updateFileListDisplay();
+        }
+
+        validateFile(file) {
+            if (!this.allowedTypes.includes(file.type)) {
+                this.showError(`Файл "${file.name}" имеет неподдерживаемый тип. Разрешены: изображения и PDF.`);
+                return false;
+            }
+
+            if (file.size > this.maxFileSize) {
+                this.showError(`Файл "${file.name}" слишком большой. Максимальный размер: ${this.maxFileSize / 1024 / 1024}MB.`);
+                return false;
+            }
+
+            const existingFile = Array.from(this.files.values()).find(f => f.name === file.name);
+            if (existingFile) {
+                this.showError(`Файл с именем "${file.name}" уже добавлен.`);
+                return false;
+            }
+
+            return true;
+        }
+
+        addFile(file) {
+            const fileId = this.generateFileId();
+            this.files.set(fileId, file);
+        }
+
+        updateFileListDisplay() {
+            const fileList = document.querySelector('.file-list');
+
+            if (this.files.size === 0) {
+                fileList.innerHTML = '<div class="file-drop-zone">Drag and drop files here or click the button to select.</div>';
+                fileList.classList.remove('has-files');
+            } else {
+                fileList.classList.add('has-files');
+                fileList.innerHTML = '';
+
+                this.files.forEach((file, fileId) => {
+                    const fileItem = this.createFileItem(fileId, file);
+                    fileList.appendChild(fileItem);
+                });
+            }
+        }
+
+        createFileItem(fileId, file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.dataset.fileId = fileId;
+
+            fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-name" title="${file.name}">${file.name}</span>
+                        <span class="file-size">(${this.formatFileSize(file.size)})</span>
+                    </div>
+                    <div class="file-actions">
+                        ${this.isImageFile(file.name) ? `<button type="button" class="btn-preview" title="Preview">👁</button>` : ''}
+                        <button type="button" class="btn-remove" title="Delete file">✕</button>
+                    </div>
+                `;
+
+            const removeBtn = fileItem.querySelector('.btn-remove');
+            const previewBtn = fileItem.querySelector('.btn-preview');
+
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => this.removeFile(fileId));
+            }
+
+            if (previewBtn) {
+                previewBtn.addEventListener('click', () => this.previewFile(fileId));
+            }
+
+            return fileItem;
+        }
+
+        removeFile(fileId) {
+            this.files.delete(fileId);
+            this.updateFileListDisplay();
+        }
+
+        previewFile(fileId) {
+            const file = this.files.get(fileId);
+            if (!file || !this.isImageFile(file.name)) return;
+
+            const modal = document.createElement('div');
+            modal.className = 'preview-modal';
+            modal.innerHTML = `
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <span class="preview-title">${file.name}</span>
+                            <button class="preview-close">✕</button>
+                        </div>
+                        <div class="preview-body">
+                            <img src="${URL.createObjectURL(file)}" alt="${file.name}" class="preview-image">
+                        </div>
+                    </div>
+                `;
+
+            document.body.appendChild(modal);
+
+            const closeBtn = modal.querySelector('.preview-close');
+            closeBtn.addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+        }
+
+        generateFileId() {
+            return `file_${++this.fileIdCounter}_${Date.now()}`;
+        }
+
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        isImageFile(fileName) {
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+            const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+            return imageExtensions.includes(extension);
+        }
+
+        showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'file-error-notification';
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        getAllFiles() {
+            return Array.from(this.files.values());
+        }
+
+        getFormData() {
+            const formData = new FormData();
+            this.getAllFiles().forEach((file, index) => {
+                formData.append(`sketches[${index}]`, file);
+            });
+            return formData;
+        }
+
+        clearAllFiles() {
+            this.files.clear();
+            this.updateFileListDisplay();
+        }
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+        window.fileUploadManager = new FileUploadManager();
+    });
+
+    // Дополнительные функции для интеграции с формой
+    function validateFormFiles() {
+        const files = window.fileUploadManager.getAllFiles();
+        if (files.length === 0) {
+            window.fileUploadManager.showError('Необходимо загрузить хотя бы один файл эскиза');
+            return false;
+        }
+        return true;
+    }
+
+    function getUploadedFiles() {
+        return window.fileUploadManager.getFormData();
+    }
+
+    // Обработка отправки формы
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (validateFormFiles()) {
+                    console.log('Форма валидна, файлы загружены:', window.fileUploadManager.getAllFiles());
+                    console.log('FormData для отправки:', getUploadedFiles());
+                    alert('Форма готова к отправке! Проверьте консоль для деталей.');
+                }
+            });
+        }
+    });
+</script>

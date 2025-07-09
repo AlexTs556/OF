@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Items\Grid" name="item_unit_price" template="quote/view/items/price/unit.phtml"/>
+        <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Items\Grid" name="item_row_total" template="quote/view/items/price/row.phtml"/>
+        <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Items\Grid" name="item_row_total_with_discount" template="quote/view/items/price/total.phtml"/>
+    </body>
+</page>

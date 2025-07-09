@@ -1,0 +1,15 @@
+<?php
+/** @var Magento\Framework\Escaper $escaper */
+/** @var Magento\Backend\Block\Template $block */
+?>
+
+<thead>
+    <tr class="headings">
+        <th class="col-thumbnail"><span><?= $escaper->escapeHtml(__('Thumbnail')) ?></span></th>
+        <th class="col-product"><span><?= $escaper->escapeHtml(__('Product')) ?></span></th>
+        <th class="col-price"><span><?= $escaper->escapeHtml(__('Price')) ?></span></th>
+        <th class="col-qty"><span><?= $escaper->escapeHtml(__('Qty')) ?></span></th>
+        <th class="col-row-total"><span><?= $escaper->escapeHtml(__('Row Subtotal')) ?></span></th>
+        <th class="col-setup"><span><?= $escaper->escapeHtml(__('Configure')) ?></span></th>
+    </tr>
+</thead>

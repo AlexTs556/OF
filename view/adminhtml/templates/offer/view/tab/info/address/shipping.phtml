@@ -1,0 +1,17 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo\Address $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+<?php if (true): ?>
+    <div class="admin__page-section-item quote-shipping-address">
+        <?php /* Shipping Address */ ?>
+        <div class="admin__page-section-item-title">
+            <span class="title"><?= $escaper->escapeHtml(__('Shipping Address')) ?></span>
+        </div>
+        <address class="admin__page-section-item-content">
+            <?= /* @noEscape */ $block->getFormattedAddress($block->getQuote()->getShippingAddress()); ?>
+        </address>
+        <?= $block->getUrlToSetDefaultShippingAddressHtml(); ?>
+    </div>
+<?php endif; ?>

@@ -1,0 +1,15 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo\Address $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+<div class="admin__page-section-item quote-billing-address">
+    <?php /* Billing Address */ ?>
+    <div class="admin__page-section-item-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Billing Address')) ?></span>
+    </div>
+    <address class="admin__page-section-item-content">
+        <?= /* @noEscape */ $block->getFormattedAddress($block->getQuote()->getBillingAddress()); ?>
+    </address>
+    <?= $block->getUrlToSetDefaultBillingAddressHtml(); ?>
+</div>

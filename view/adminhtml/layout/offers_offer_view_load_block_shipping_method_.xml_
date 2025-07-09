@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- phpcs:ignoreFile Generic.Files.LineLength -->
+
+<!--
+  ~ Copyright (c) 2024. Cart2Quote B.V. All rights reserved.
+  ~ See COPYING.txt for license details.
+  -->
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Shipping\Method" template="quote/view/abstract.phtml" name="shipping_method">
+                <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Shipping\Method\Form" template="quote/view/shipping/method/form.phtml" name="quote.view.shipping.method.form" as="form">
+                    <block class="Cart2Quote\Quotation\Block\Adminhtml\Quote\View\Shipping\Method\Form\Quotation" template="quote/view/shipping/method/form/quotation.phtml" name="quote.view.shipping.method.form.quotation">
+                        <arguments>
+                            <argument name="is_ajax" xsi:type="boolean">true</argument>
+                        </arguments>
+                    </block>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

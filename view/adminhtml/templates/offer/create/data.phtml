@@ -1,0 +1,90 @@
+<?php
+/** @var Magento\Framework\Escaper $escaper */
+
+$symbol = $block->getCurrencySymbol($block->getCurrentCurrencyCode());
+?>
+<div class="page-create-order">
+    <script>
+        require(["Magento_Sales/order/create/form"], function () {
+            order.setCurrencySymbol('<?= $escaper->escapeHtml($symbol) ?>')
+        });
+    </script>
+    <div class=
+         "order-details
+        <?php if ($block->getCustomerId()): ?>
+        order-details-existing-customer
+        <?php endif; ?>
+        ">
+
+        <div id="order-errors" class="order-errors"><?= $block->getChildHtml('errors') ?></div>
+
+        <section id="order-form_account" class="admin__page-section order-account-information">
+            <?= $block->getChildHtml('form_account') ?>
+        </section>
+
+        <section id="order-addresses" class="admin__page-section order-addresses">
+            <div class="admin__page-section-title">
+                <span class="title"><?= $escaper->escapeHtml(__('Address Information')) ?></span>
+            </div>
+            <div class="admin__page-section-content">
+                <div id="order-billing_address" class="admin__page-section-item order-billing-address">
+                    <?= $block->getChildHtml('billing_address') ?>
+                </div>
+                <div id="order-shipping_address" class="admin__page-section-item order-shipping-address">
+                    <?= $block->getChildHtml('shipping_address') ?>
+                </div>
+            </div>
+        </section>
+        <?php
+        /**
+         * dummy section used in Magento_Sales/order/create/scripts -> isPaymentValidationAvailable
+         */
+        ?>
+        <section id="order-methods" class="admin__page-section order-methods" style="display: none;">
+            <div class="admin__page-section-content">
+                <div id="order-billing_method" class="admin__page-section-item order-billing-method">
+                </div>
+            </div>
+            <div id="order-shipping_method" class="admin__page-section-item order-shipping-method">
+                <?= $block->getChildHtml('shipping_method') ?>
+            </div>
+        </section>
+
+        <?= $block->getChildHtml('gift_options') ?>
+
+        <section class="quote-actions">
+            <div class="order-totals-actions">
+                <div class="actions">
+                    <?= $block->getButtonHtml('Create Offer', 'order.submit()', 'save primary') ?>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <?php if ($block->getCustomerId()): ?>
+        <div class="order-sidebar">
+            <div class="store-switcher order-currency">
+                <label class="admin__field-label" for="currency_switcher">
+                    <?= $escaper->escapeHtml(__('Offer Currency:')) ?>
+                </label>
+                <select id="currency_switcher"
+                        class="admin__control-select"
+                        name="order[currency]"
+                        onchange="order.setCurrencyId(this.value);
+                            order.setCurrencySymbol(
+                                this.options[this.selectedIndex].getAttribute('symbol')
+                            );">
+                    <?php foreach ($block->getAvailableCurrencies() as $_code): ?>
+                        <option value="<?= $escaper->escapeHtml($_code) ?>"
+                                symbol="<?= $escaper->escapeHtml($block->getCurrencySymbol($_code)) ?>"
+                            <?php if ($_code == $block->getCurrentCurrencyCode()): ?>
+                                selected="selected"
+                            <?php endif; ?>>
+                            <?= $escaper->escapeHtml($block->getCurrencyName($_code)) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>

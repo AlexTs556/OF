@@ -1,0 +1,374 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\Configure $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Open Sans', Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+    }
+
+    .popup-container {
+        background: white;
+        border: 2px solid #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .popup-header {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .form-row {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: center;
+    }
+
+    .form-label {
+        width: 120px;
+        font-weight: 500;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .form-input {
+        border: 2px solid #333;
+        padding: 8px 12px;
+        font-size: 14px;
+        width: 200px;
+    }
+
+    .form-input-wide {
+        width: 300px;
+    }
+
+    .stock-info {
+        margin-left: 15px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .textarea-input {
+        border: 2px solid #333;
+        padding: 8px 12px;
+        font-size: 14px;
+        width: 300px;
+        height: 80px;
+        resize: vertical;
+    }
+
+    .image-placeholder {
+        width: 100px;
+        height: 80px;
+        border: 2px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f8f8;
+        margin-left: 15px;
+    }
+
+    .image-placeholder::before {
+        content: "✕";
+        font-size: 40px;
+        color: #999;
+    }
+
+    .customization-section {
+        border: 2px solid #e74c3c;
+        margin: 20px 0;
+        background: #f9f9f9;
+    }
+
+    .customization-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .customization-table th {
+        background: #d3d3d3;
+        padding: 8px 12px;
+        border: 1px solid #999;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .customization-table td {
+        padding: 8px 12px;
+        border: 1px solid #999;
+        background: white;
+    }
+
+    .customization-table input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        padding: 4px;
+    }
+
+    .add-row-btn {
+        background: #f9f9f9;
+        border: none;
+        padding: 10px;
+        width: 100%;
+        text-align: center;
+        cursor: pointer;
+        border-top: 1px solid #999;
+        font-weight: bold;
+    }
+
+    .add-row-btn:hover {
+        background: #eee;
+    }
+
+    .sketches-section {
+        margin: 20px 0;
+    }
+
+    .sketch-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sketch-list li {
+        margin: 5px 0;
+        color: #0066cc;
+        cursor: pointer;
+    }
+
+    .sketch-list li:hover {
+        text-decoration: underline;
+    }
+
+    .upload-btn {
+        border: 2px solid #333;
+        padding: 8px 16px;
+        background: white;
+        cursor: pointer;
+        margin-left: 15px;
+    }
+
+    .upload-btn:hover {
+        background: #f0f0f0;
+    }
+
+    .checkbox-row {
+        margin: 15px 0;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+        margin-right: 8px;
+    }
+
+    .action-buttons {
+        text-align: right;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+    }
+
+    .add-to-quote-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .add-to-quote-btn:hover {
+        background: #218838;
+    }
+
+    .remove-row-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 2px 6px;
+        cursor: pointer;
+        border-radius: 2px;
+        font-size: 12px;
+    }
+
+    .remove-row-btn:hover {
+        background: #c82333;
+    }
+</style>
+
+<div id="custom-options-popup" style="display:none;">
+    <div class="popup-content">
+        <h2 class="popup-title"></h2>
+            <div class="form-row" data-field="name">
+                <label
+                    class="form-label"
+                    for="configure_item_name">
+                    <span><?= $escaper->escapeHtml(__('Product Name')) ?></span>
+                </label>
+                <input type="text"
+                       class="form-input form-input-wide"
+                       id="configure_item_name"
+                       name=""
+                       value=""/>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Stock</label>
+                <span class="stock-info">5 pieces still available</span>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Customer Note</label>
+                <textarea class="textarea-input" placeholder="Enter customer note..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Internal Note</label>
+                <textarea class="textarea-input" placeholder="Enter internal note..."></textarea>
+            </div>
+
+            <div class="sketches-section">
+                <div class="form-row">
+                    <label class="form-label">Sketches</label>
+                    <div>
+                        <ul class="sketch-list">
+                        </ul>
+                    </div>
+                    <button class="upload-btn" onclick="document.getElementById('file-upload').click()">
+                        Upload File
+                    </button>
+                    <input type="file" id="file-upload" style="display: none;" multiple accept="image/*,.pdf" onchange="handleFileUpload(this)" />
+                </div>
+            </div>
+
+            <div class="customization-section">
+                <table class="customization-table" id="customization-table">
+                    <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Standard</th>
+                        <th>Customization</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="customization-tbody">
+
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addCustomizationRow()">
+                    Add More Customization +
+                </button>
+            </div>
+
+            <div class="checkbox-row">
+                <label>
+                    <input type="checkbox" checked />
+                    Optional Item (can be removed by customer)
+                </label>
+            </div>
+
+            <div class="checkbox-row">
+                <label>
+                    <input type="checkbox" checked />
+                    Ignore Inventory Management (ignores stock)
+                </label>
+            </div>
+    </div>
+</div>
+
+
+<script>
+    const MAX_CUSTOMIZATION_ROWS = 20;
+
+    function addCustomizationRow() {
+        const tbody = document.getElementById('customization-tbody');
+        const rowCount = tbody.children.length;
+
+        if (rowCount >= MAX_CUSTOMIZATION_ROWS) {
+            alert(`Maximum ${MAX_CUSTOMIZATION_ROWS} customization rows allowed`);
+            return;
+        }
+
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+                <td><input type="text" placeholder="Attribute name" /></td>
+                <td><input type="text" placeholder="Standard value" /></td>
+                <td><input type="text" placeholder="Custom value" /></td>
+                <td><button class="remove-row-btn" onclick="removeCustomizationRow(this)">×</button></td>
+            `;
+
+        tbody.appendChild(newRow);
+    }
+
+    function removeCustomizationRow(button) {
+        const tbody = document.getElementById('customization-tbody');
+        if (tbody.children.length <= 1) {
+            alert('At least one customization row is required');
+            return;
+        }
+
+        const row = button.closest('tr');
+        row.remove();
+    }
+
+    function handleFileUpload(input) {
+        const files = input.files;
+        const sketchList = document.querySelector('.sketch-list');
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const listItem = document.createElement('li');
+            listItem.textContent = file.name;
+            sketchList.appendChild(listItem);
+        }
+
+        // Reset input for future uploads
+        input.value = '';
+    }
+
+    function addToQuote() {
+        // Collect form data
+        const formData = {
+            name: document.querySelector('input[value="Table Set Kitchen Furniture"]').value,
+            price: document.querySelector('input[value="199"]').value,
+            quantity: document.querySelector('input[value="2"]').value,
+            discount: document.querySelector('input[value="5"]').value,
+            customerNote: document.querySelector('textarea').value,
+            internalNote: document.querySelectorAll('textarea')[1].value,
+            customizations: [],
+            isOptional: document.querySelectorAll('input[type="checkbox"]')[0].checked,
+            ignoreInventory: document.querySelectorAll('input[type="checkbox"]')[1].checked
+        };
+
+        // Collect customization data
+        const customizationRows = document.querySelectorAll('#customization-tbody tr');
+        customizationRows.forEach(row => {
+            const inputs = row.querySelectorAll('input[type="text"]');
+            if (inputs[0].value.trim()) {
+                formData.customizations.push({
+                    attribute: inputs[0].value,
+                    standard: inputs[1].value,
+                    customization: inputs[2].value
+                });
+            }
+        });
+
+        console.log('Form Data:', formData);
+        alert('Item added to quote successfully!');
+    }
+</script>

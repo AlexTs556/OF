@@ -1,0 +1,12 @@
+<?php
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+<div class="admin__page-section-title">
+    <span class="title"><?= $escaper->escapeHtml($block->getHeaderText()) ?></span>
+    <?php if ($block->getButtonsHtml()): ?>
+        <div class="actions"><?= $block->getButtonsHtml() ?></div>
+    <?php endif; ?>
+</div>
+
+<?= $block->getChildHtml('', true) ?>

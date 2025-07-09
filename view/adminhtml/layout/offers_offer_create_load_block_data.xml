@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="sales_order_create_load_block_data"/>
+    <body>
+        <referenceBlock name="data">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">OneMoveTwo_Offers::offer/create/data.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="order.create.shipping.method.form">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">OneMoveTwo_Offers::offer/create/shipping/method/form.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="comment">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">OneMoveTwo_Offers::offer/create/comment.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

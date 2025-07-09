@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\OfferItems" name="items" template="OneMoveTwo_Offers::offer/view/items.phtml">
+            <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\Grid" name="items_grid"/>
+            <arguments>
+                <argument name="columns" xsi:type="array">
+                    <item name="thumbnail" xsi:type="string" translate="true">Thumbnail</item>
+                    <item name="product" xsi:type="string" translate="true">Product</item>
+                    <item name="tier-select" xsi:type="string" translate="true"/>
+                    <item name="price-cost" xsi:type="string" translate="true">Cost Price</item>
+                    <item name="weight" xsi:type="string" translate="true">Weight</item>
+                    <item name="price-original" xsi:type="string" translate="true">Original Price</item>
+                    <item name="price-quoted" xsi:type="string" translate="true">Price*</item>
+                    <item name="ordered-qty" xsi:type="string" translate="true">Qty</item>
+                    <item name="discount" xsi:type="string" translate="true">Discount</item>
+                    <item name="percentage-discount" xsi:type="string" translate="true">Adjustment Percentage</item>
+                    <item name="total" xsi:type="string" translate="true">Row Total</item>
+                    <item name="quote-margin" xsi:type="string" translate="true">GP Margin Percentage</item>
+                    <item name="quote-margin-value" xsi:type="string" translate="true">GP Margin Value</item>
+                    <item name="tier-delete" xsi:type="string" translate="true"/>
+                    <item name="action" xsi:type="string" translate="true">Action</item>
+                </argument>
+                <argument name="header_text" xsi:type="string" translate="true">Items Quoted</argument>
+            </arguments>
+        </block>
+
+    </body>
+</page>

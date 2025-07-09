@@ -1,0 +1,121 @@
+
+<?php /** @var \OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\File $block */ ?>
+
+<?php $uploadedFiles = $block->getUploadedFiles(); ?>
+<?php $offer = $block->getOffer() ?>
+<form id="file_upload"
+      method="post"
+      action="<?= $escaper->escapeUrl($block->getUrlAction()) ?>"
+      enctype="multipart/form-data">
+    <?= $block->getBlockHtml('formkey') ?>
+    <div class="admin__page-section-title">
+        <strong class="title"><?= $escaper->escapeHtml(__('File Uploads')) ?></strong>
+    </div>
+    <input type="hidden" name="quote_id" value="<?= $escaper->escapeHtml($offer->getId()) ?>"/>
+    <table class="upload-files">
+        <thead>
+        <tr>
+            <td colspan="2">
+                <label class="admin__field-label secondary">
+                    <?= $escaper->escapeHtml(__('Upload new File(s)')) ?>
+                </label>
+            </td>
+        </tr>
+        </thead>
+        <tbody id="file-upload">
+        <tr data-mage-init='{"Cart2Quote_Quotation/quote/view/file-upload": {}}' class="select-file">
+            <th>
+                <label class="admin__field-label">
+                    <?= $escaper->escapeHtml(__('Title')) ?>
+                </label>
+            </th>
+            <td>
+                <label class="admin__field-label">
+                    <input type="text" name="title_0" class="input-text admin__control-text"/>
+                </label>
+            </td>
+            <th class="uploaded-title">
+                <label class="admin__field-label">
+                    <?= $escaper->escapeHtml(__('Select File')) ?>
+                </label>
+            </th>
+            <td class="uploaded-files">
+                <label class="admin__field-label">
+                    <input type="file" name="fileupload_0"/>
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button type="button" onclick="newUploadRow()" class="action-additional action-change-customer">
+                    (+) <?= $escaper->escapeHtml(__('Add another file')) ?>
+                </button>
+                <button class="action-secondary upload-file" type="submit"
+                        onclick='upload("<?= $escaper->escapeUrl($block->getUrl('offers/file/upload')) ?>");
+                            return false;'>
+                    <?= $escaper->escapeHtml(__('Upload Files')) ?>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="uploaded-files">
+        <?php if (is_array($uploadedFiles)): ?>
+            <thead>
+            <tr>
+                <th colspan="3">
+                    <label class="admin__field-label secondary" for="uploaded_files">
+                        <?= $escaper->escapeHtml(__('Uploaded Files')) ?>
+                    </label>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th><?= $escaper->escapeHtml(__('Name')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Attach to Proposal Email')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Show in Frontend')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Action')) ?></th>
+            </tr>
+            <?php foreach ($uploadedFiles as $file): ?>
+                <?php $checkedCustomer =
+                    $block->isChecked($file, \Cart2Quote\Quotation\Model\Quote\File::CUSTOMER_FOLDER)
+                        ? 'checked="checked"'
+                        : '' ?>
+                <?php $checkedEmail = $block->isChecked($file, \Cart2Quote\Quotation\Model\Quote\File::EMAIL_FOLDER)
+                    ? 'checked="checked"'
+                    : '' ?>
+                <tr>
+                    <td>
+                        <a href="<?= $escaper->escapeUrl($block->getDownloadUrl($file)) ?>"
+                           class="file-name"><?= $escaper->escapeHtml($block->trimFileName($file)) ?></a>
+                    </td>
+                    <td>
+                        <input type="hidden"
+                            <?= /* @noEscape */ sprintf('name="upload_email[%s]"', $block->getCheckboxId($file)) ?>
+                               value="dont_email">
+                        <input type="checkbox"
+                            <?= /* @noEscape */ sprintf('name="upload_email[%s]"', $block->getCheckboxId($file)) ?>
+                               value="show_email" <?= $escaper->escapeHtml($checkedEmail) ?>>
+                    </td>
+                    <td>
+                        <input type="hidden"
+                            <?= /* @noEscape */ sprintf('name="upload_customer[%s]"', $block->getCheckboxId($file)) ?>
+                               value="dont_show">
+                        <input type="checkbox"
+                            <?= /* @noEscape */ sprintf('name="upload_customer[%s]"', $block->getCheckboxId($file)) ?>
+                               value="show_customer" <?= $escaper->escapeHtml($checkedCustomer) ?>>
+                    </td>
+                    <td>
+                        <a href="#"
+                           class="remove-file"
+                           onclick="removeFile('<?= $escaper->escapeUrl($block->getDeleteUrl($file)) ?>')">
+                            <i class="icon-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        <?php endif; ?>
+    </table>
+</form>

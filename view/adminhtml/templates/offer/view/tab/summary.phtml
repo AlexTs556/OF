@@ -1,0 +1,327 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferSummary $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .admin-form-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-header {
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #303030;
+        }
+
+        .form-content {
+            padding: 20px;
+        }
+
+        .customer-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 40px;
+        }
+
+        .customer-info {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 3px;
+            border: 1px solid #e5e5e5;
+            flex: 1;
+        }
+
+        .customer-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #303030;
+        }
+
+        .customer-info-line {
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .customer-info-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .offer-stats {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 3px;
+            border: 1px solid #e5e5e5;
+            min-width: 250px;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .stat-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #303030;
+        }
+
+        .stat-value {
+            color: #666;
+        }
+
+        .link-value {
+            color: #007bdb;
+            text-decoration: underline;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+
+        .products-table th {
+            background: #f5f5f5;
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            font-weight: 600;
+            color: #303030;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .products-table td {
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
+            vertical-align: top;
+        }
+
+        .products-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .product-image {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .price-cell, .total-cell {
+            text-align: right;
+            font-weight: 600;
+            color: #303030;
+        }
+
+        .delivery-payment-section {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .delivery-info {
+            flex: 1;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .info-label {
+            width: 150px;
+            font-weight: 600;
+            color: #303030;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: #666;
+            flex: 1;
+        }
+
+        .payment-section {
+            min-width: 200px;
+        }
+
+        .payment-input-container {
+            margin-bottom: 15px;
+        }
+
+        .payment-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 3px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .summary-actions-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 40px;
+        }
+
+        .summary-table {
+            min-width: 300px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-row:last-child {
+            border-bottom: 2px solid #333;
+            font-weight: 600;
+            color: #303030;
+            font-size: 16px;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #303030;
+        }
+
+        .summary-value {
+            color: #666;
+            text-align: right;
+        }
+
+        .final-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-large {
+            padding: 15px 25px;
+            font-size: 16px;
+            min-width: 150px;
+        }
+    </style>
+
+<div class="admin-form-container">
+    <div class="form-header">
+        <?= $block->getOffer()->getOfferName() .' | '. $block->getOffer()->getOfferNumber()?>
+    </div>
+
+    <div class="form-content">
+        <!-- Customer and Stats Section -->
+
+        <?= $block->getChildHtml('summary_offer_customer_address') ?>
+
+        <!-- Products Table -->
+
+        <?= $block->getChildHtml('summary_items') ?>
+
+        <!-- Delivery and Payment Section -->
+        <div class="delivery-payment-section">
+            <div class="delivery-info">
+                <div class="info-row">
+                    <div class="info-label"><?= __('Delivery Time')?></div>
+                    <div class="info-value">100 days</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><?= __('Delivery Method')?></div>
+                    <div class="info-value">Freight forwarding, curbside delivery</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><?= __('Other Notes')?></div>
+                    <div class="info-value">It must be delivered to 2nd</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="customer-section">
+            <div class="payment-section">
+                <div class="info-label" style="margin-bottom: 10px;"><?= __('Down Payment')?></div>
+                <div class="payment-input-container">
+                    <input type="text" class="payment-input" value="1000 €">
+                </div>
+                <button class="btn btn-success"><?= __('Save deposit')?></button>
+            </div>
+
+            <div class="offer-stats">
+                <div class="stat-line">
+                    <span class="stat-label"><?= __('Aufrufe')?></span>
+                    <span class="stat-value">20x</span>
+                </div>
+                <div class="stat-line">
+                    <span class="stat-label"><?= __('Gast Link')?></span>
+                    <span class="link-value">https://www.domain.de/offer/view/xyz</span>
+                </div>
+                <div class="stat-line">
+                    <span class="stat-label"><?= __('Privat Link')?></span>
+                    <span class="link-value">https://www.domain.de/offer/privat/zxa</span>
+                </div>
+            </div>
+        </div>
+
+
+        <?= $block->getChildHtml('totals') ?>
+    </div>
+</div>
+

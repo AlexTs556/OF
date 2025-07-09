@@ -1,0 +1,24 @@
+<?php
+/** @var Magento\Backend\Block\Template $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+
+
+<div class="form-row">
+    <section class="admin__page-section offer-addresses">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $escaper->escapeHtml(__('Address Information')) ?></span>
+            <button type="button"
+                    onclick='offer.changeAddress("<?= $escaper->escapeUrl(
+                        $block->getUrl('offers/offer_update/address', $block->getUrlParams(true))
+                    ) ?>");'
+                    class="action-change-address">
+                <span><?= $escaper->escapeHtml(__('Change Address')) ?></span>
+            </button>
+        </div>
+
+        <div class="admin__page-section-content">
+            <?= $block->getChildHtml() ?>
+        </div>
+    </section>
+</div>

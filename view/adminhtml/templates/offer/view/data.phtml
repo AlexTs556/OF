@@ -1,0 +1,19 @@
+<?php
+/** @var OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Data $block */
+/** @var Magento\Framework\Escaper $escaper */
+?>
+<div class="page-create-offer">
+    <div class="offer-details
+        <?php if ($block->getCustomerId()): ?>
+            <?= ' offer-details-existing-customer'; ?>
+        <?php endif; ?>">
+
+        <div id="offer-search" style="display: none" class="admin__page-section offer-search-items ">
+            <?= $block->getChildHtml('search') ?>
+        </div>
+
+        <section id="offer-items" class="admin__page-section offer-items" data-mage-init='{"loader": {}}'>
+            <?= $block->getChildHtml('items') ?>
+        </section>
+    </div>
+</div>

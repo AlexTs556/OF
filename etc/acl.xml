@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="OneMoveTwo_Offers::offers" title="Offers" sortOrder="20">
+                    <resource id="OneMoveTwo_Offers::offers_operation" title="Operations" sortOrder="10">
+                        <resource id="OneMoveTwo_Offers::offer" title="Offers" sortOrder="10">
+                            <resource id="OneMoveTwo_Offers::actions" title="Actions" sortOrder="10">
+                                <resource id="OneMoveTwo_Offers::create" title="Create" sortOrder="10"/>
+                                <resource id="OneMoveTwo_Offers::actions_view" title="View" sortOrder="20"/>
+                                <resource id="OneMoveTwo_Offers::email" title="Send Email" sortOrder="30"/>
+                                <resource id="OneMoveTwo_Offers::actions_edit" title="Edit" sortOrder="40"/>
+                                <resource id="OneMoveTwo_Offers::cancel" title="Cancel" sortOrder="50"/>
+                                <resource id="OneMoveTwo_Offers::hold" title="Hold" sortOrder="60"/>
+                                <resource id="OneMoveTwo_Offers::comment" title="Comment" sortOrder="70"/>
+                                <resource id="OneMoveTwo_Offers::massDelete" title="Delete" sortOrder="80"/>
+                            </resource>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

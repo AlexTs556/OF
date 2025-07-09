@@ -1,0 +1,36 @@
+<?php
+/** @var Magento\Framework\Escaper $escaper */
+
+
+
+?>
+
+<script>
+    require([
+        "prototype",
+        "offerForm",
+        "Magento_Catalog/catalog/product/composite/configure",
+        "domReady!"
+    ], function () {
+
+        function initProductConfigure() {
+            productConfigure.addListType('product_to_add', {
+                urlFetch: '<?= $escaper->escapeHtml($block->getUrl('offers/offer_view/configureProductToAdd')) ?>'
+            });
+
+            productConfigure.addListType('offer_items', {
+                urlFetch: '<?= $escaper->escapeHtml($block->getUrl('offers/offer_view/configureOfferItems')) ?>'
+            });
+        }
+
+        Event.observe(window, 'load', function () {
+            if (window.productConfigure) {
+                initProductConfigure();
+            }
+        });
+
+        if (window.productConfigure) {
+            initProductConfigure();
+        }
+    });
+</script>
