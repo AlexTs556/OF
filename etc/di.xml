@@ -18,6 +18,10 @@
     <preference for="OneMoveTwo\Offers\Api\OfferAttachmentRepositoryInterface" type="OneMoveTwo\Offers\Model\Repository\OfferAttachmentRepository"/>
     <preference for="OneMoveTwo\Offers\Api\OfferItemAttachmentRepositoryInterface" type="OneMoveTwo\Offers\Model\Repository\OfferItemAttachmentRepository"/>
 
+    <preference for="OneMoveTwo\Offers\Api\OfferManagementInterface" type="OneMoveTwo\Offers\Service\OfferManagementService"/>
+    <preference for="OneMoveTwo\Offers\Api\Data\OfferDataInterface" type="OneMoveTwo\Offers\Model\Data\OfferData"/>
+
+
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">

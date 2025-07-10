@@ -1,4 +1,250 @@
 <?xml version="1.0"?>
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <!-- === OFFER MANAGEMENT API === -->
+
+    <!-- Complete Offer Operations -->
+    <route url="/V1/offers/complete" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="createCompleteOffer"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::create"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/complete" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="updateCompleteOffer"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <!-- Basic Offer CRUD -->
+    <route url="/V1/offers" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/full" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="getOfferWithFullData"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::create"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferRepositoryInterface" method="save"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId" method="DELETE">
+        <service class="OneMoveTwo\Offers\Api\OfferRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::massDelete"/>
+        </resources>
+    </route>
+
+    <!-- Offer Actions -->
+    <route url="/V1/offers/:offerId/status" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="changeOfferStatus"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:parentOfferId/version" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="createOfferVersion"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::create"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/send-email" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="sendOfferEmail"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::email"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/calculate-totals" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferManagementInterface" method="calculateTotals"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <!-- === OFFER ITEMS API === -->
+
+    <!-- Item CRUD -->
+    <route url="/V1/offers/:offerId/items" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferItemRepositoryInterface" method="getByOfferId"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/items" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="addItemToOffer"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferItemRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId/full" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="getItemWithFullData"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="updateItem"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId" method="DELETE">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="removeItem"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <!-- Item Actions -->
+    <route url="/V1/offers/items/:itemId/duplicate" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="duplicateItem"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId/copy/:targetOfferId" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="copyItemToOffer"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId/quantity" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="updateQuantity"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId/discount" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="applyDiscount"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/items/:itemId/options" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferItemManagementInterface" method="updateItemOptions"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <!-- === OFFER ATTACHMENTS API === -->
+
+    <!-- Attachment CRUD -->
+    <route url="/V1/offers/:offerId/attachments" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentRepositoryInterface" method="getByOfferId"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/attachments" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="uploadAttachment"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/attachments/:attachmentId" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentRepositoryInterface" method="getById"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/attachments/:attachmentId" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="updateAttachment"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/attachments/:attachmentId" method="DELETE">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="removeAttachment"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <!-- Attachment Actions -->
+    <route url="/V1/offers/attachments/:attachmentId/content" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="getAttachmentContent"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/attachments/:attachmentId/copy/:targetOfferId" method="POST">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="copyAttachmentToOffer"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/:offerId/attachments/reorder" method="PUT">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="reorderAttachments"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_edit"/>
+        </resources>
+    </route>
+
+    <route url="/V1/offers/attachments/:attachmentId/download-url" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferAttachmentManagementInterface" method="getDownloadUrl"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
+    <!-- === OFFER HISTORY API === -->
+
+    <route url="/V1/offers/:offerId/history" method="GET">
+        <service class="OneMoveTwo\Offers\Api\OfferHistoryRepositoryInterface" method="getByOfferId"/>
+        <resources>
+            <resource ref="OneMoveTwo_Offers::actions_view"/>
+        </resources>
+    </route>
+
 </routes>

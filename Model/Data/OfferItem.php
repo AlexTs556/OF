@@ -298,4 +298,78 @@ class OfferItem extends AbstractModel implements OfferItemInterface, IdentityInt
     {
         return $this->setData(self::UPDATED_AT, $updatedAt);
     }
+
+    /**
+     * Get parsed product options
+     *
+     * @return array
+     */
+    public function getParsedProductOptions(): array
+    {
+        $options = $this->getProductOptions();
+        if (!$options) {
+            return [];
+        }
+
+        $decoded = json_decode($options, true);
+        return $decoded ?: [];
+    }
+
+    /**
+     * Get parsed additional options
+     *
+     * @return array
+     */
+    public function getParsedAdditionalOptions(): array
+    {
+        $options = $this->getAdditionalOptions();
+        if (!$options) {
+            return [];
+        }
+
+        $decoded = json_decode($options, true);
+        return $decoded ?: [];
+    }
+
+    /**
+     * Get item attachments (for API)
+     *
+     * @return \OneMoveTwo\Offers\Api\Data\OfferItemAttachmentInterface[]
+     */
+    public function getAttachments(): array
+    {
+        if (!$this->hasData('attachments')) {
+            $this->loadAttachments();
+        }
+        return $this->getData('attachments') ?? [];
+    }
+
+    /**
+     * Set item attachments (for API)
+     *
+     * @param \OneMoveTwo\Offers\Api\Data\OfferItemAttachmentInterface[] $attachments
+     * @return $this
+     */
+    public function setAttachments(array $attachments): self
+    {
+        return $this->setData('attachments', $attachments);
+    }
+
+    /**
+     * Load attachments if not loaded
+     */
+    private function loadAttachments(): void
+    {
+        if (!$this->getItemId()) {
+            $this->setData('attachments', []);
+            return;
+        }
+
+        // This would be injected in real implementation
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $attachmentRepository = $objectManager->get(\OneMoveTwo\Offers\Api\OfferItemAttachmentRepositoryInterface::class);
+        $attachments = $attachmentRepository->getByOfferItemId($this->getItemId());
+        $this->setData('attachments', $attachments);
+    }
+
 }

@@ -145,5 +145,4 @@ readonly class OfferItemRepository implements OfferItemRepositoryInterface
 
         return true;
     }
-
 }
