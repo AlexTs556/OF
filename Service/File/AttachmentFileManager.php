@@ -8,11 +8,11 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Exception\LocalizedException;
 
-class AttachmentFileManager
+readonly class AttachmentFileManager
 {
     public function __construct(
-        private readonly Filesystem $filesystem,
-        private readonly DirectoryList $directoryList
+        private Filesystem    $filesystem,
+        private DirectoryList $directoryList
     ) {
     }
 

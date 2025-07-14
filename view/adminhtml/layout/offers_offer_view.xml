@@ -87,7 +87,7 @@
                         </block>
                     </block>
 
-                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Totals" template="OneMoveTwo_Offers::offer/view/tab/summary/totals.phtml" name="totals">
+                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Totals" template="OneMoveTwo_Offers::offer/view/tab/summary/totals.phtml" name="summary_totals">
                         <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Shipping" template="Magento_Sales::order/create/totals/shipping.phtml" name="shipping_total_renderer"/>
                         <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Discount" template="Magento_Sales::order/create/totals/default.phtml" name="discount_total_renderer"/>
                         <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Grandtotal" template="Magento_Sales::order/create/totals/grandtotal.phtml" name="grand_total_total_renderer"/>

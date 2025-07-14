@@ -275,7 +275,9 @@
 
         <!-- Products Table -->
 
-        <?= $block->getChildHtml('summary_items') ?>
+        <div id="offer-summary_items">
+            <?= $block->getChildHtml('summary_items') ?>
+        </div>
 
         <!-- Delivery and Payment Section -->
         <div class="delivery-payment-section">
@@ -321,7 +323,9 @@
         </div>
 
 
-        <?= $block->getChildHtml('totals') ?>
+        <div id="offer-summary_totals">
+            <?= $block->getChildHtml('summary_totals') ?>
+        </div>
     </div>
 </div>
 

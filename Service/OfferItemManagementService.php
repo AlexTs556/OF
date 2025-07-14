@@ -17,17 +17,17 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
-class OfferItemManagementService implements OfferItemManagementInterface
+readonly class OfferItemManagementService implements OfferItemManagementInterface
 {
     public function __construct(
-        private readonly OfferItemRepositoryInterface $offerItemRepository,
-        private readonly OfferRepositoryInterface $offerRepository,
-        private readonly OfferManagementInterface $offerManagement,
-        private readonly OfferItemInterfaceFactory $itemFactory,
-        private readonly OfferItemValidator $itemValidator,
-        private readonly ItemCalculator $itemCalculator,
-        private readonly OfferHistoryManager $historyManager,
-        private readonly ProductRepositoryInterface $productRepository
+        private OfferItemRepositoryInterface $offerItemRepository,
+        private OfferRepositoryInterface     $offerRepository,
+        private OfferManagementInterface     $offerManagement,
+        private OfferItemInterfaceFactory    $itemFactory,
+        private OfferItemValidator           $itemValidator,
+        private ItemCalculator               $itemCalculator,
+        private OfferHistoryManager          $historyManager,
+        private ProductRepositoryInterface   $productRepository
     ) {
     }
 

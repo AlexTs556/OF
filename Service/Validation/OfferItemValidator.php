@@ -8,10 +8,10 @@ use OneMoveTwo\Offers\Api\Data\OfferItemInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 
-class OfferItemValidator
+readonly class OfferItemValidator
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private ProductRepositoryInterface $productRepository
     ){
     }
 

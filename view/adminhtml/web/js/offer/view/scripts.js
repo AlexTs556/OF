@@ -756,7 +756,17 @@ define([
             if (this.productGridShowButton) {
                 Element.show(this.productGridShowButton);
             }
-            var area = ['search', 'items', 'shipping_method', 'totals', 'convert', 'giftmessage', 'billing_method'];
+            let area = [
+                'search',
+                'items',
+                'shipping_method',
+                'totals',
+                'convert',
+                'giftmessage',
+                'billing_method',
+                'summary_items',
+                'summary_totals'
+            ];
             // prepare additional fields and filtered items of products
             var fieldsPrepare = {};
             var itemsFilter = [];
@@ -858,7 +868,9 @@ define([
                         'billing_method',
                         'totals',
                         'convert',
-                        'giftmessage'
+                        'giftmessage',
+                        'summary_items',
+                        'summary_totals'
                     ],
                     true,
                     data
@@ -926,18 +938,18 @@ define([
         },
 
         itemsUpdate: function () {
-            var area = [
+            let area = [
                 'sidebar',
                 'items',
                 'shipping_method',
                 'billing_method',
                 'totals',
                 'convert',
-                'giftmessage'
+                'giftmessage',
+                'summary_items',
+                'summary_totals'
             ];
 
-
-            console.log(area);
             // prepare additional fields
             var fieldsPrepare = {update_items: 1};
             var info = $('offer-items_grid').select('input', 'select', 'textarea');

@@ -4,7 +4,6 @@
 ?>
 
 <style>
-
     * {
         margin: 0;
         padding: 0;
@@ -223,7 +222,7 @@
         gap: 10px;
     }
 
-    /* Стили для загрузки файлов */
+    /* File upload styles */
     .file-item {
         display: flex;
         justify-content: space-between;
@@ -267,7 +266,8 @@
     }
 
     .btn-preview,
-    .btn-remove {
+    .btn-remove,
+    .btn-download {
         background: none;
         border: none;
         cursor: pointer;
@@ -287,11 +287,17 @@
         color: white;
     }
 
+    .btn-download:hover {
+        background-color: #28a745;
+        color: white;
+    }
+
     .file-drop-zone {
         text-align: center;
         padding: 20px;
         color: #999;
         font-style: italic;
+        cursor: pointer;
     }
 
     .preview-modal {
@@ -360,7 +366,13 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
-    /* Стили для секции адресов */
+    input.form-control-wide.disabled {
+        background-color: #eee;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    /* Address section styles */
     .admin__page-section {
         width: 100%;
     }
@@ -446,24 +458,6 @@
         text-decoration: none;
     }
 
-    input.form-control-wide.disabled {
-        background-color: #eee;
-        opacity: 0.6;
-        pointer-events: none;
-    }
-
-    .offer-items {
-        margin-bottom: 18px;
-    }
-
-    .offer-search-items .data-grid .action-configure {
-        float: right;
-    }
-
-    .offer-search-items .data-grid .action-configure.disabled {
-        display: none;
-    }
-
     @media (max-width: 768px) {
         .admin__page-section-content {
             flex-direction: column;
@@ -490,7 +484,6 @@
             width: 100%;
         }
     }
-
 </style>
 
 <div class="admin-form-container">
@@ -522,7 +515,7 @@
                 <div class="form-label">Customer</div>
                 <div class="form-field">
                     <div class="form-field-inline">
-                        <input type="text" class="form-control form-control-wide" style="background-color: rgb(238, 238, 238); opacity: 0.6; pointer-events: none;" value="<?= $block->getCustomerName()?>" readonly>
+                        <input type="text" class="form-control form-control-wide disabled" value="<?= $block->getCustomerName()?>" readonly>
                     </div>
                 </div>
             </div>
@@ -560,7 +553,7 @@
                             id="offer_number"
                             value="<?= $block->getOffer()?->getOfferNumber()?>">
                         <div class="checkbox-container">
-                            <input type="checkbox" name="offer_number_auto_generate" id="auto_generate" checked>
+                            <input type="checkbox" name="offer_number_auto_generate" id="auto_generate">
                             <label for="auto_generate">Auto generate</label>
                         </div>
                     </div>
@@ -590,7 +583,7 @@
             <div class="form-row">
                 <div class="form-label">Consultant Comment</div>
                 <div class="form-field">
-                    <input type="text" name="comment" class="form-control form-control-wide textarea-large" placeholder="Comment" value="">
+                    <textarea name="comment" class="form-control form-control-wide textarea-large" placeholder="Comment"></textarea>
                 </div>
             </div>
 
@@ -616,315 +609,4 @@
             "offerInfoForm": {}
         }
     }
-</script>
-
-<script>
-    function updateInputState() {
-        const checkbox = document.getElementById('auto_generate');
-        const input = document.getElementById('offer_number');
-
-        if (checkbox.checked) {
-            input.readonly = true;
-            input.classList.add('disabled');
-        } else {
-            input.readonly = false;
-            input.classList.remove('disabled');
-        }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const checkbox = document.getElementById('auto_generate');
-        checkbox.addEventListener('change', updateInputState);
-        updateInputState(); // начальное состояние
-    });
-</script>
-
-
-<script>
-    class FileUploadManager {
-        constructor() {
-            this.files = new Map();
-            this.fileIdCounter = 0;
-            this.maxFileSize = 10 * 1024 * 1024; // 10MB
-            this.allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
-
-            this.init();
-        }
-
-        init() {
-            this.createFileInput();
-            this.bindEvents();
-            this.updateFileListDisplay();
-        }
-
-        createFileInput() {
-            this.fileInput = document.createElement('input');
-            this.fileInput.type = 'file';
-            this.fileInput.multiple = true;
-            this.fileInput.accept = 'image/*,.pdf';
-            this.fileInput.style.display = 'none';
-            document.body.appendChild(this.fileInput);
-        }
-
-        bindEvents() {
-            const uploadButton = document.querySelector('.btn.btn-secondary');
-            const fileList = document.querySelector('.file-list');
-
-            if (uploadButton) {
-                uploadButton.addEventListener('click', () => this.openFileDialog());
-            }
-
-            this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
-
-            if (fileList) {
-                fileList.addEventListener('dragover', (e) => this.handleDragOver(e));
-                fileList.addEventListener('drop', (e) => this.handleDrop(e));
-                fileList.addEventListener('dragenter', (e) => this.handleDragEnter(e));
-                fileList.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-                fileList.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('file-drop-zone')) {
-                        this.openFileDialog();
-                    }
-                });
-            }
-        }
-
-        openFileDialog() {
-            this.fileInput.click();
-        }
-
-        handleFileSelect(event) {
-            const selectedFiles = Array.from(event.target.files);
-            this.processFiles(selectedFiles);
-            this.fileInput.value = '';
-        }
-
-        handleDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        handleDragEnter(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        handleDragLeave(e) {
-            e.preventDefault();
-            if (!e.currentTarget.contains(e.relatedTarget)) {
-                e.currentTarget.classList.remove('drag-over');
-            }
-        }
-
-        handleDrop(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-
-            const droppedFiles = Array.from(e.dataTransfer.files);
-            this.processFiles(droppedFiles);
-        }
-
-        processFiles(files) {
-            files.forEach(file => {
-                if (this.validateFile(file)) {
-                    this.addFile(file);
-                }
-            });
-            this.updateFileListDisplay();
-        }
-
-        validateFile(file) {
-            if (!this.allowedTypes.includes(file.type)) {
-                this.showError(`Файл "${file.name}" имеет неподдерживаемый тип. Разрешены: изображения и PDF.`);
-                return false;
-            }
-
-            if (file.size > this.maxFileSize) {
-                this.showError(`Файл "${file.name}" слишком большой. Максимальный размер: ${this.maxFileSize / 1024 / 1024}MB.`);
-                return false;
-            }
-
-            const existingFile = Array.from(this.files.values()).find(f => f.name === file.name);
-            if (existingFile) {
-                this.showError(`Файл с именем "${file.name}" уже добавлен.`);
-                return false;
-            }
-
-            return true;
-        }
-
-        addFile(file) {
-            const fileId = this.generateFileId();
-            this.files.set(fileId, file);
-        }
-
-        updateFileListDisplay() {
-            const fileList = document.querySelector('.file-list');
-
-            if (this.files.size === 0) {
-                fileList.innerHTML = '<div class="file-drop-zone">Drag and drop files here or click the button to select.</div>';
-                fileList.classList.remove('has-files');
-            } else {
-                fileList.classList.add('has-files');
-                fileList.innerHTML = '';
-
-                this.files.forEach((file, fileId) => {
-                    const fileItem = this.createFileItem(fileId, file);
-                    fileList.appendChild(fileItem);
-                });
-            }
-        }
-
-        createFileItem(fileId, file) {
-            const fileItem = document.createElement('div');
-            fileItem.className = 'file-item';
-            fileItem.dataset.fileId = fileId;
-
-            fileItem.innerHTML = `
-                    <div class="file-info">
-                        <span class="file-name" title="${file.name}">${file.name}</span>
-                        <span class="file-size">(${this.formatFileSize(file.size)})</span>
-                    </div>
-                    <div class="file-actions">
-                        ${this.isImageFile(file.name) ? `<button type="button" class="btn-preview" title="Preview">👁</button>` : ''}
-                        <button type="button" class="btn-remove" title="Delete file">✕</button>
-                    </div>
-                `;
-
-            const removeBtn = fileItem.querySelector('.btn-remove');
-            const previewBtn = fileItem.querySelector('.btn-preview');
-
-            if (removeBtn) {
-                removeBtn.addEventListener('click', () => this.removeFile(fileId));
-            }
-
-            if (previewBtn) {
-                previewBtn.addEventListener('click', () => this.previewFile(fileId));
-            }
-
-            return fileItem;
-        }
-
-        removeFile(fileId) {
-            this.files.delete(fileId);
-            this.updateFileListDisplay();
-        }
-
-        previewFile(fileId) {
-            const file = this.files.get(fileId);
-            if (!file || !this.isImageFile(file.name)) return;
-
-            const modal = document.createElement('div');
-            modal.className = 'preview-modal';
-            modal.innerHTML = `
-                    <div class="preview-content">
-                        <div class="preview-header">
-                            <span class="preview-title">${file.name}</span>
-                            <button class="preview-close">✕</button>
-                        </div>
-                        <div class="preview-body">
-                            <img src="${URL.createObjectURL(file)}" alt="${file.name}" class="preview-image">
-                        </div>
-                    </div>
-                `;
-
-            document.body.appendChild(modal);
-
-            const closeBtn = modal.querySelector('.preview-close');
-            closeBtn.addEventListener('click', () => {
-                document.body.removeChild(modal);
-            });
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            });
-        }
-
-        generateFileId() {
-            return `file_${++this.fileIdCounter}_${Date.now()}`;
-        }
-
-        formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        isImageFile(fileName) {
-            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
-            const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
-            return imageExtensions.includes(extension);
-        }
-
-        showError(message) {
-            const notification = document.createElement('div');
-            notification.className = 'file-error-notification';
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 5000);
-        }
-
-        getAllFiles() {
-            return Array.from(this.files.values());
-        }
-
-        getFormData() {
-            const formData = new FormData();
-            this.getAllFiles().forEach((file, index) => {
-                formData.append(`sketches[${index}]`, file);
-            });
-            return formData;
-        }
-
-        clearAllFiles() {
-            this.files.clear();
-            this.updateFileListDisplay();
-        }
-    }
-
-    // Инициализация
-    document.addEventListener('DOMContentLoaded', function() {
-        window.fileUploadManager = new FileUploadManager();
-    });
-
-    // Дополнительные функции для интеграции с формой
-    function validateFormFiles() {
-        const files = window.fileUploadManager.getAllFiles();
-        if (files.length === 0) {
-            window.fileUploadManager.showError('Необходимо загрузить хотя бы один файл эскиза');
-            return false;
-        }
-        return true;
-    }
-
-    function getUploadedFiles() {
-        return window.fileUploadManager.getFormData();
-    }
-
-    // Обработка отправки формы
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                if (validateFormFiles()) {
-                    console.log('Форма валидна, файлы загружены:', window.fileUploadManager.getAllFiles());
-                    console.log('FormData для отправки:', getUploadedFiles());
-                    alert('Форма готова к отправке! Проверьте консоль для деталей.');
-                }
-            });
-        }
-    });
 </script>

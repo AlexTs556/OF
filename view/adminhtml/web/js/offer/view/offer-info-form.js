@@ -3,86 +3,88 @@ define([
     'mage/validation',
     'mage/url',
     'mage/translate',
-    'mage/template',
     'Magento_Ui/js/modal/alert',
     'Magento_Ui/js/modal/confirm',
     'jquery/ui'
-], function ($, validation, urlBuilder, $t, mageTemplate, alert, confirm) {
+], function ($, validation, urlBuilder, $t, alert, confirm) {
     'use strict';
 
     return function(config, element) {
-        let options = {
-            formSelector: '#offer_info',
-            saveButton: 'button[type="submit"]',
-            saveAndContinueButton: '.btn:contains("Save and Continue")',
-            cancelButton: '.btn:contains("Cancel")',
-            fileUploadButton: '.btn-secondary:contains("Upload Files")',
-            fileDropZone: '.file-drop-zone',
-            autoGenerateCheckbox: '#auto_generate',
-            offerNumberInput: '#offer_number',
-            offerEmailCheckbox: '#offer_email'
-        };
+        var OfferInfoForm = {
+            // Configuration options
+            options: {
+                formSelector: '#offer_info',
+                saveAndContinueButton: '.btn-primary:contains("Save and Continue")',
+                autoGenerateCheckbox: '#auto_generate',
+                offerNumberInput: '#offer_number',
+                offerEmailCheckbox: '#offer_email',
+                fileUploadButton: '.btn-secondary',
+                fileDropZone: '.file-list',
+                fileListContainer: '.file-list',
+                maxFileSize: 10 * 1024 * 1024, // 10MB
+                allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf']
+            },
 
-        var component = {
+            // File management properties
+            files: new Map(),
+            fileIdCounter: 0,
+
             /**
-             * Инициализация компонента
+             * Initialize the component
              */
             init: function() {
                 this.bindEvents();
                 this.initValidation();
                 this.initFileUpload();
                 this.initAutoGenerate();
+                this.updateFileListDisplay();
             },
 
             /**
-             * Привязка событий
+             * Bind all events
              */
             bindEvents: function() {
                 var self = this;
 
-                // Обработка отправки формы
-                $(options.formSelector).on('submit', function(e) {
+                // Form submission
+                $(this.options.formSelector).on('submit', function(e) {
                     e.preventDefault();
                     self.submitForm(false);
                 });
 
-                // Кнопка "Save and Continue"
-                $(options.saveAndContinueButton).on('click', function(e) {
+                // Save and Continue button
+                $(this.options.saveAndContinueButton).on('click', function(e) {
                     e.preventDefault();
                     self.submitForm(true);
                 });
 
-                // Кнопка "Cancel"
-                $(options.cancelButton).on('click', function(e) {
-                    e.preventDefault();
-                    self.cancelForm();
+                // Auto-generate checkbox
+                $(this.options.autoGenerateCheckbox).on('change', function() {
+                    self.updateOfferNumberInputState();
                 });
 
-                // Кнопка загрузки файлов
-                $(options.fileUploadButton).on('click', function(e) {
+                // File upload button
+                $(this.options.fileUploadButton).on('click', function(e) {
                     e.preventDefault();
                     self.openFileDialog();
                 });
 
-                // Drag & Drop для файлов
-                $(options.fileDropZone).on('dragover', function(e) {
-                    e.preventDefault();
-                    $(this).addClass('drag-over');
-                }).on('dragleave', function(e) {
-                    e.preventDefault();
-                    $(this).removeClass('drag-over');
-                }).on('drop', function(e) {
-                    e.preventDefault();
-                    $(this).removeClass('drag-over');
-                    self.handleFilesDrop(e.originalEvent.dataTransfer.files);
-                });
+                // File drop zone events
+                var $fileList = $(this.options.fileListContainer);
+                $fileList
+                    .on('dragover', function(e) { self.handleDragOver(e); })
+                    .on('dragenter', function(e) { self.handleDragEnter(e); })
+                    .on('dragleave', function(e) { self.handleDragLeave(e); })
+                    .on('drop', function(e) { self.handleDrop(e); })
+                    .on('click', '.file-drop-zone', function() { self.openFileDialog(); });
             },
 
             /**
-             * Инициализация валидации формы
+             * Initialize form validation
              */
             initValidation: function() {
-                $(options.formSelector).validation({
+                var self = this;
+                $(this.options.formSelector).validation({
                     rules: {
                         'offer_name': {
                             required: true,
@@ -90,7 +92,7 @@ define([
                         },
                         'offer_number': {
                             required: function() {
-                                return !$(options.autoGenerateCheckbox).is(':checked');
+                                return !$(self.options.autoGenerateCheckbox).is(':checked');
                             }
                         },
                         'expiry_date': {
@@ -113,125 +115,273 @@ define([
             },
 
             /**
-             * Инициализация автогенерации номера предложения
-             */
-            initAutoGenerate: function() {
-                var self = this;
-
-                $(options.autoGenerateCheckbox).on('change', function() {
-                    var $offerNumber = $(options.offerNumberInput);
-
-                    if ($(this).is(':checked')) {
-                        $offerNumber.prop('readonly', true).addClass('disabled');
-                        self.generateOfferNumber();
-                    } else {
-                        $offerNumber.prop('readonly', false).removeClass('disabled');
-                    }
-                });
-            },
-
-            /**
-             * Генерация номера предложения
-             */
-            generateOfferNumber: function() {
-                var self = this;
-
-                $.ajax({
-                    url: urlBuilder.build('admin/offer/generateNumber'),
-                    type: 'POST',
-                    dataType: 'json',
-                    showLoader: true,
-                    data: {
-                        form_key: $('input[name="form_key"]').val()
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $(options.offerNumberInput).val(response.offer_number);
-                        } else {
-                            self.showError(response.message || $t('Error generating offer number'));
-                        }
-                    },
-                    error: function() {
-                        self.showError($t('Error generating offer number'));
-                    }
-                });
-            },
-
-            /**
-             * Инициализация загрузки файлов
+             * Initialize file upload functionality
              */
             initFileUpload: function() {
-                // Создаем скрытый input для файлов
-                if (!$('#file-input-hidden').length) {
-                    $('<input type="file" id="file-input-hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" style="display:none;">').appendTo('body');
+                this.createFileInput();
+            },
+
+            /**
+             * Create hidden file input
+             */
+            createFileInput: function() {
+                if (!this.fileInput) {
+                    this.fileInput = document.createElement('input');
+                    this.fileInput.type = 'file';
+                    this.fileInput.multiple = true;
+                    this.fileInput.accept = 'image/*,.pdf';
+                    this.fileInput.style.display = 'none';
+                    document.body.appendChild(this.fileInput);
+
+                    var self = this;
+                    this.fileInput.addEventListener('change', function(e) {
+                        self.handleFileSelect(e);
+                    });
                 }
             },
 
             /**
-             * Открытие диалога выбора файлов
+             * Initialize auto-generate functionality
+             */
+            initAutoGenerate: function() {
+                // Set checkbox state based on existing offer number value
+                var $input = $(this.options.offerNumberInput);
+                var $checkbox = $(this.options.autoGenerateCheckbox);
+
+                var hasExistingNumber = $input.val() && $input.val().trim() !== '';
+
+                if (hasExistingNumber) {
+                    // If there's already a number, disable auto-generate
+                    $checkbox.prop('checked', false);
+                } else {
+                    // If no number exists, enable auto-generate
+                    $checkbox.prop('checked', true);
+                }
+
+                this.updateOfferNumberInputState();
+            },
+
+            /**
+             * Update offer number input state based on auto-generate checkbox
+             */
+            updateOfferNumberInputState: function() {
+                var $checkbox = $(this.options.autoGenerateCheckbox);
+                var $input = $(this.options.offerNumberInput);
+
+                if ($checkbox.is(':checked')) {
+                    $input.prop('readonly', true).addClass('disabled');
+                    // Clear the input when auto-generate is enabled
+                    // The number will be generated on backend during form submission
+                    $input.val('');
+                } else {
+                    $input.prop('readonly', false).removeClass('disabled');
+                }
+            },
+
+            /**
+             * Open file selection dialog
              */
             openFileDialog: function() {
-                var self = this;
-
-                $('#file-input-hidden').off('change').on('change', function() {
-                    self.handleFiles(this.files);
-                }).click();
+                this.fileInput.click();
             },
 
             /**
-             * Обработка выбранных файлов
+             * Handle file selection from input
              */
-            handleFiles: function(files) {
-                this.handleFilesDrop(files);
+            handleFileSelect: function(event) {
+                var selectedFiles = Array.from(event.target.files);
+                this.processFiles(selectedFiles);
+                this.fileInput.value = '';
             },
 
             /**
-             * Обработка файлов из drag&drop
+             * Handle drag over event
              */
-            handleFilesDrop: function(files) {
+            handleDragOver: function(e) {
+                e.preventDefault();
+                e.originalEvent.dataTransfer.dropEffect = 'copy';
+                $(e.currentTarget).addClass('drag-over');
+            },
+
+            /**
+             * Handle drag enter event
+             */
+            handleDragEnter: function(e) {
+                e.preventDefault();
+                $(e.currentTarget).addClass('drag-over');
+            },
+
+            /**
+             * Handle drag leave event
+             */
+            handleDragLeave: function(e) {
+                e.preventDefault();
+                if (!e.currentTarget.contains(e.originalEvent.relatedTarget)) {
+                    $(e.currentTarget).removeClass('drag-over');
+                }
+            },
+
+            /**
+             * Handle drop event
+             */
+            handleDrop: function(e) {
+                e.preventDefault();
+                $(e.currentTarget).removeClass('drag-over');
+                var droppedFiles = Array.from(e.originalEvent.dataTransfer.files);
+                this.processFiles(droppedFiles);
+            },
+
+            /**
+             * Process selected files
+             */
+            processFiles: function(files) {
                 var self = this;
-
-                Array.from(files).forEach(function(file) {
-                    // Проверка типа файла
-                    var allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-
-                    if (!allowedTypes.includes(file.type)) {
-                        self.showError($t('File type not allowed: ') + file.name);
-                        return;
+                files.forEach(function(file) {
+                    if (self.validateFile(file)) {
+                        self.addFile(file);
                     }
-
-                    // Проверка размера файла (10MB)
-                    if (file.size > 10 * 1024 * 1024) {
-                        self.showError($t('File too large: ') + file.name);
-                        return;
-                    }
-
-                    // Добавляем файл в список
-                    self.addFileToList(file);
                 });
+                this.updateFileListDisplay();
             },
 
             /**
-             * Добавление файла в список
+             * Validate file before adding
              */
-            addFileToList: function(file) {
-                var fileTemplate = '<div class="file-item" data-file-name="' + file.name + '">' +
-                    '<span class="file-name">' + file.name + '</span>' +
+            validateFile: function(file) {
+                if (!this.options.allowedTypes.includes(file.type)) {
+                    this.showError($t('File "%1" has unsupported type. Allowed: images and PDF.').replace('%1', file.name));
+                    return false;
+                }
+
+                if (file.size > this.options.maxFileSize) {
+                    var maxSizeMB = this.options.maxFileSize / 1024 / 1024;
+                    this.showError($t('File "%1" is too large. Maximum size: %2MB.').replace('%1', file.name).replace('%2', maxSizeMB));
+                    return false;
+                }
+
+                var existingFile = Array.from(this.files.values()).find(function(f) {
+                    return f.name === file.name;
+                });
+                if (existingFile) {
+                    this.showError($t('File with name "%1" already added.').replace('%1', file.name));
+                    return false;
+                }
+
+                return true;
+            },
+
+            /**
+             * Add file to the files map
+             */
+            addFile: function(file) {
+                var fileId = this.generateFileId();
+                this.files.set(fileId, file);
+            },
+
+            /**
+             * Update file list display
+             */
+            updateFileListDisplay: function() {
+                var $fileList = $(this.options.fileListContainer);
+
+                if (this.files.size === 0) {
+                    $fileList.html('<div class="file-drop-zone">Drag and drop files here or click the button to select.</div>');
+                    $fileList.removeClass('has-files');
+                } else {
+                    $fileList.addClass('has-files');
+                    $fileList.empty();
+
+                    var self = this;
+                    this.files.forEach(function(file, fileId) {
+                        var fileItem = self.createFileItem(fileId, file);
+                        $fileList.append(fileItem);
+                    });
+                }
+            },
+
+            /**
+             * Create file item element
+             */
+            createFileItem: function(fileId, file) {
+                var self = this;
+                var $fileItem = $('<div class="file-item" data-file-id="' + fileId + '"></div>');
+
+                var fileInfoHtml = '<div class="file-info">' +
+                    '<span class="file-name" title="' + file.name + '">' + file.name + '</span>' +
                     '<span class="file-size">(' + this.formatFileSize(file.size) + ')</span>' +
-                    '<button type="button" class="remove-file btn btn-link">&times;</button>' +
                     '</div>';
 
-                $('.file-drop-zone').before(fileTemplate);
+                var actionsHtml = '<div class="file-actions">';
+                if (this.isImageFile(file.name)) {
+                    actionsHtml += '<button type="button" class="btn-preview" title="Preview">👁</button>';
+                }
+                actionsHtml += '<button type="button" class="btn-remove" title="Delete file">✕</button>';
+                actionsHtml += '</div>';
 
-                // Обработчик удаления файла
-                $('.file-item:last .remove-file').on('click', function() {
-                    $(this).closest('.file-item').remove();
+                $fileItem.html(fileInfoHtml + actionsHtml);
+
+                // Bind events
+                $fileItem.find('.btn-remove').on('click', function() {
+                    self.removeFile(fileId);
+                });
+
+                $fileItem.find('.btn-preview').on('click', function() {
+                    self.previewFile(fileId);
+                });
+
+                return $fileItem;
+            },
+
+            /**
+             * Remove file from list
+             */
+            removeFile: function(fileId) {
+                this.files.delete(fileId);
+                this.updateFileListDisplay();
+            },
+
+            /**
+             * Preview image file
+             */
+            previewFile: function(fileId) {
+                var file = this.files.get(fileId);
+                if (!file || !this.isImageFile(file.name)) return;
+
+                var self = this;
+                var $modal = $('<div class="preview-modal">' +
+                    '<div class="preview-content">' +
+                    '<div class="preview-header">' +
+                    '<span class="preview-title">' + file.name + '</span>' +
+                    '<button class="preview-close">✕</button>' +
+                    '</div>' +
+                    '<div class="preview-body">' +
+                    '<img src="' + URL.createObjectURL(file) + '" alt="' + file.name + '" class="preview-image">' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>');
+
+                $('body').append($modal);
+
+                $modal.find('.preview-close').on('click', function() {
+                    $modal.remove();
+                });
+
+                $modal.on('click', function(e) {
+                    if (e.target === this) {
+                        $modal.remove();
+                    }
                 });
             },
 
             /**
-             * Форматирование размера файла
+             * Generate unique file ID
+             */
+            generateFileId: function() {
+                return 'file_' + (++this.fileIdCounter) + '_' + Date.now();
+            },
+
+            /**
+             * Format file size for display
              */
             formatFileSize: function(bytes) {
                 if (bytes === 0) return '0 Bytes';
@@ -242,43 +392,113 @@ define([
             },
 
             /**
-             * Отправка формы
+             * Check if file is an image
              */
-            submitForm: function(continueEdit) {
-                var self = this;
-                var $form = $(options.formSelector);
+            isImageFile: function(fileName) {
+                var imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+                var extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+                return imageExtensions.includes(extension);
+            },
+
+            /**
+             * Get all uploaded files
+             */
+            getAllFiles: function() {
+                return Array.from(this.files.values());
+            },
+
+            /**
+             * Get FormData with all files and attachments info
+             */
+            getFormData: function() {
+                var formData = new FormData();
+                var attachments = [];
+
+                this.files.forEach(function(file, fileId) {
+                    attachments.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        id: fileId
+                    });
+                    formData.append('attachments[]', file);
+                });
+
+                // Add attachments info as JSON
+                formData.append('attachments_info', JSON.stringify(attachments.map(function(att) {
+                    return {
+                        name: att.name,
+                        size: att.size,
+                        type: att.type,
+                        id: att.id
+                    };
+                })));
+
+                return formData;
+            },
+
+            /**
+             * Validate form including files
+             */
+            validateForm: function() {
+                var $form = $(this.options.formSelector);
 
                 if (!$form.validation('isValid')) {
                     return false;
                 }
 
+                return true;
+            },
+
+            /**
+             * Submit form with all data
+             */
+            submitForm: function(continueEdit) {
+                var self = this;
+
+                if (!this.validateForm()) {
+                    return false;
+                }
+
+                var $form = $(this.options.formSelector);
                 var formData = new FormData();
 
-                // Собираем данные формы
+                // Add form fields
                 $form.serializeArray().forEach(function(field) {
                     formData.append(field.name, field.value);
                 });
 
-                // Добавляем файлы
-                $('.file-item').each(function() {
-                    var fileName = $(this).data('file-name');
-                    var fileInput = $('#file-input-hidden')[0];
-
-                    if (fileInput.files) {
-                        Array.from(fileInput.files).forEach(function(file) {
-                            if (file.name === fileName) {
-                                formData.append('sketches[]', file);
-                            }
-                        });
-                    }
+                // Add files as attachments array
+                var attachments = [];
+                this.files.forEach(function(file, fileId) {
+                    attachments.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        id: fileId
+                    });
+                    // Also add file to FormData for upload
+                    formData.append('attachments[]', file);
                 });
 
-                // Добавляем флаг "продолжить редактирование"
+                // Add attachments info as JSON for backend processing
+                formData.append('attachments_info', JSON.stringify(attachments.map(function(att) {
+                    return {
+                        name: att.name,
+                        size: att.size,
+                        type: att.type,
+                        id: att.id
+                    };
+                })));
+
+                // Add continue flag
                 if (continueEdit) {
                     formData.append('back', 'continue');
                 }
 
-                // Отправка данных
+                // Submit
                 $.ajax({
                     url: $form.attr('action'),
                     type: 'POST',
@@ -291,14 +511,13 @@ define([
                         self.handleSuccess(response, continueEdit);
                     },
                     error: function(xhr) {
-                        console.log(xhr);
                         self.handleError(xhr);
                     }
                 });
             },
 
             /**
-             * Обработка успешного ответа
+             * Handle successful form submission
              */
             handleSuccess: function(response, continueEdit) {
                 if (response.success) {
@@ -315,7 +534,7 @@ define([
             },
 
             /**
-             * Обработка ошибки
+             * Handle form submission error
              */
             handleError: function(xhr) {
                 var errorMessage = $t('An error occurred while saving the offer');
@@ -326,29 +545,14 @@ define([
                         errorMessage = response.message;
                     }
                 } catch (e) {
-                    // Используем сообщение по умолчанию
+                    // Use default message
                 }
 
                 this.showError(errorMessage);
             },
 
             /**
-             * Отмена формы
-             */
-            cancelForm: function() {
-                confirm({
-                    content: $t('Are you sure you want to cancel? All unsaved changes will be lost.'),
-                    actions: {
-                        confirm: function() {
-                            // Переход к списку предложений или закрытие формы
-                            window.location.href = urlBuilder.build('admin/offer/index');
-                        }
-                    }
-                });
-            },
-
-            /**
-             * Показать сообщение об успехе
+             * Show success message
              */
             showSuccess: function(message) {
                 alert({
@@ -359,9 +563,18 @@ define([
             },
 
             /**
-             * Показать сообщение об ошибке
+             * Show error message
              */
             showError: function(message) {
+                // Create notification element
+                var $notification = $('<div class="file-error-notification">' + message + '</div>');
+                $('body').append($notification);
+
+                setTimeout(function() {
+                    $notification.remove();
+                }, 5000);
+
+                // Also show modal for critical errors
                 alert({
                     title: $t('Error'),
                     content: message,
@@ -370,9 +583,10 @@ define([
             }
         };
 
-        // Инициализируем компонент
-        component.init();
+        // Initialize the component
+        OfferInfoForm.init();
 
-        return component;
+        // Return component instance for external access
+        return OfferInfoForm;
     };
 });

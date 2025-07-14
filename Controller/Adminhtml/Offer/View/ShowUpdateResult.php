@@ -1,37 +1,24 @@
 <?php
 
+declare(strict_types=1);
 
 namespace OneMoveTwo\Offers\Controller\Adminhtml\Offer\View;
 
-use OneMoveTwo\Offers\Controller\Adminhtml\Offer\View;
+use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\View\Result\PageFactory;
-use Psr\Log\LoggerInterface;
-use OneMoveTwo\Offers\Model\OfferRepository;
 use Magento\Framework\Controller\Result\RawFactory;
-use Magento\Backend\Model\Session\Quote;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Raw;
 
-class ShowUpdateResult extends View
+class ShowUpdateResult extends Action
 {
 
     public function __construct(
         Context $context,
-        Registry $coreRegistry,
-        PageFactory $resultPageFactory,
-        LoggerInterface $logger,
-        Quote $backendQuoteSession,
-        OfferRepository $offerRepository,
         private readonly RawFactory $resultRawFactory,
     ) {
-        parent::__construct(
-            $context,
-            $coreRegistry,
-            $resultPageFactory,
-            $logger,
-            $backendQuoteSession,
-            $offerRepository
-        );
+        parent::__construct($context,);
     }
 
     /**
@@ -39,9 +26,8 @@ class ShowUpdateResult extends View
      * - to prevent popup alert with resend data question
      *
      */
-    public function execute()
+    public function execute(): ResultInterface|ResponseInterface|Raw
     {
-        /** @var \Magento\Framework\Controller\Result\Raw $resultRaw */
         $resultRaw = $this->resultRawFactory->create();
         $session = $this->_session;
         if ($session->hasUpdateResult() && is_scalar($session->getUpdateResult())) {

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\OfferItems" template="OneMoveTwo_Offers::offer/view/tab/summary/items.phtml" name="summary_items">
+                <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\Grid" template="OneMoveTwo_Offers::offer/view/tab/summary/items/grid.phtml" name="summary_items_grid">
+                    <block class="Magento\Backend\Block\Template" template="OneMoveTwo_Offers::offer/view/tab/summary/items/grid/thead.phtml" name="summary_items_grid_thead"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

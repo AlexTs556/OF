@@ -4,27 +4,28 @@ declare(strict_types=1);
 
 namespace OneMoveTwo\Offers\Service;
 
-use Magento\Framework\Exception\LocalizedException;
 use OneMoveTwo\Offers\Api\Data\OfferInterface;
 use OneMoveTwo\Offers\Api\Data\OfferInterfaceFactory;
 use OneMoveTwo\Offers\Api\OfferRepositoryInterface;
 use OneMoveTwo\Offers\Api\OfferItemRepositoryInterface;
 use OneMoveTwo\Offers\Api\OfferManagementInterface;
-use OneMoveTwo\Offers\Service\Calculator\TotalsCalculator;
-use OneMoveTwo\Offers\Service\Email\OfferEmailSender;
+//use OneMoveTwo\Offers\Service\Calculator\TotalsCalculator;
+//use OneMoveTwo\Offers\Service\Email\OfferEmailSender;
 use OneMoveTwo\Offers\Service\History\OfferHistoryManager;
 use OneMoveTwo\Offers\Service\Validation\OfferValidator;
 
-class OfferManagementService implements OfferManagementInterface
+readonly class OfferManagementService implements OfferManagementInterface
 {
     public function __construct(
-        private readonly OfferRepositoryInterface $offerRepository,
-        private readonly OfferItemRepositoryInterface $offerItemRepository,
-        private readonly OfferInterfaceFactory $offerFactory,
-        private readonly TotalsCalculator $totalsCalculator,
-        private readonly OfferEmailSender $emailSender,
-        private readonly OfferHistoryManager $historyManager,
-        private readonly OfferValidator $offerValidator
+        private OfferRepositoryInterface     $offerRepository,
+        private OfferItemRepositoryInterface $offerItemRepository,
+        private OfferInterfaceFactory        $offerFactory,
+        private OfferAttachmentManagementService  $offerAttachmentManagementService,
+       /* private TotalsCalculator             $totalsCalculator,
+        private OfferEmailSender             $emailSender,
+        private OfferHistoryManager          $historyManager*/
+        private OfferHistoryManager          $historyManager,
+        private OfferValidator               $offerValidator
     ) {
     }
 
@@ -45,16 +46,20 @@ class OfferManagementService implements OfferManagementInterface
         $savedOffer = $this->offerRepository->save($offer);
 
         // Add items
-        foreach ($items as $item) {
-            $item->setOfferId($savedOffer->getEntityId());
-            $this->offerItemRepository->save($item);
+        if (!empty($items)) {
+            foreach ($items as $item) {
+                $item->setOfferId($savedOffer->getEntityId());
+                $this->offerItemRepository->save($item);
+            }
         }
 
-        // Process attachments
-        $this->processAttachments($savedOffer->getEntityId(), $attachments);
+        // Process attachments if provided
+        if (!empty($attachments)) {
+            $this->processAttachments($savedOffer->getEntityId(), $attachments);
+        }
 
         // Calculate totals
-        $savedOffer = $this->calculateTotals($savedOffer->getEntityId());
+        //$savedOffer = $this->calculateTotals($savedOffer->getEntityId());
 
         // Add to history
         $this->historyManager->addRecord(
@@ -71,8 +76,10 @@ class OfferManagementService implements OfferManagementInterface
         array $items = [],
         array $attachments = []
     ): OfferInterface {
-        // Validate offer exists
-        $existingOffer = $this->offerRepository->getById($offer->getEntityId());
+
+        if (!$offer->getEntityId()){
+
+        }
 
         // Validate offer data
         $this->offerValidator->validate($offer);
@@ -91,7 +98,7 @@ class OfferManagementService implements OfferManagementInterface
         }
 
         // Recalculate totals
-        $savedOffer = $this->calculateTotals($savedOffer->getEntityId());
+        //$savedOffer = $this->calculateTotals($savedOffer->getEntityId());
 
         // Add to history
         $this->historyManager->addRecord(
@@ -103,7 +110,7 @@ class OfferManagementService implements OfferManagementInterface
         return $savedOffer;
     }
 
-    public function addItemToOffer(int $offerId, $item)
+    public function addItemToOffer(int $offerId, $item): \OneMoveTwo\Offers\Api\Data\OfferItemInterface
     {
         // Validate offer exists
         $offer = $this->offerRepository->getById($offerId);
@@ -118,7 +125,7 @@ class OfferManagementService implements OfferManagementInterface
         $savedItem = $this->offerItemRepository->save($item);
 
         // Recalculate totals
-        $this->calculateTotals($offerId);
+        //$this->calculateTotals($offerId);
 
         // Add to history
         $this->historyManager->addRecord(
@@ -130,7 +137,7 @@ class OfferManagementService implements OfferManagementInterface
         return $savedItem;
     }
 
-    public function updateOfferItem(int $itemId, $item)
+    public function updateOfferItem(int $itemId, $item): \OneMoveTwo\Offers\Api\Data\OfferItemInterface
     {
         // Validate item exists
         $existingItem = $this->offerItemRepository->getById($itemId);
@@ -146,7 +153,7 @@ class OfferManagementService implements OfferManagementInterface
         $savedItem = $this->offerItemRepository->save($item);
 
         // Recalculate totals
-        $this->calculateTotals($existingItem->getOfferId());
+       // $this->calculateTotals($existingItem->getOfferId());
 
         // Add to history
         $this->historyManager->addRecord(
@@ -169,7 +176,7 @@ class OfferManagementService implements OfferManagementInterface
 
         if ($result) {
             // Recalculate totals
-            $this->calculateTotals($offerId);
+           // $this->calculateTotals($offerId);
 
             // Add to history
             $this->historyManager->addRecord(
@@ -285,7 +292,7 @@ class OfferManagementService implements OfferManagementInterface
     // Private helper methods
     private function generateOfferNumber(): string
     {
-        return 'OF' . date('Y') . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        return 'OF' . date('Y') . str_pad((string)rand(1, 99999), 5, '0', STR_PAD_LEFT);
     }
 
     private function generateVersionNumber(string $baseNumber): string
@@ -304,8 +311,7 @@ class OfferManagementService implements OfferManagementInterface
 
     private function processAttachments(int $offerId, array $attachments): void
     {
-        // Implementation for processing attachments
-        // This would involve file upload handling, etc.
+        $this->offerAttachmentManagementService->uploadAttachment($offerId);
     }
 
     private function copyOfferItems(int $fromOfferId, int $toOfferId): void

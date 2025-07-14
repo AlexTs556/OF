@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OneMoveTwo\Offers\Controller\Adminhtml\Offer\View;
 
-use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use OneMoveTwo\Offers\Controller\Adminhtml\Offer\View;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
@@ -20,6 +20,15 @@ use Magento\Backend\App\Action;
 
 class LoadBlock extends Action
 {
+    /**
+     * Registry key for current offer
+     */
+    private const string CURRENT_OFFER_REGISTRY_KEY = 'current_offer';
+
+    /**
+     * Registry key for current quote
+     */
+    private const string CURRENT_QUOTE_REGISTRY_KEY = 'current_quote';
 
     public function __construct(
         Context $context,
@@ -42,34 +51,23 @@ class LoadBlock extends Action
         $request = $this->getRequest();
         try {
             $this->initOffer();
-            $this->initSession();
+            $this->initQuoteSession();
+            $this->initMagentoQuote();
             $this->processActionData();
-            $magentoQuote = $this->getMagentoQuote();
         } catch (LocalizedException $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage($e, $e->getMessage());
         }
-       // $this->_reloadQuote();
 
         $asJson = $request->getParam('json');
         $block = $request->getParam('block');
-
         $resultPage = $this->resultPageFactory->create();
-        //$maxQtyForReload = $this->helperData->getMaxProductQtyForReload();
-        $maxQtyForReload = 10;
 
         if ($this->getRequest()->has('item') && $asJson) {
-            if (count($this->getRequest()->getPost('item')) > $maxQtyForReload ||
-                count($magentoQuote->getAllVisibleItems()) > $maxQtyForReload) {
-                $resultPage->addHandle('offers_offer_view_load_block_reload');
-            } else {
-                $resultPage->addHandle('offers_offer_view_load_block_json');
-            }
+            $resultPage->addHandle('offers_offer_view_load_block_json');
         } elseif ($asJson) {
             $resultPage->addHandle('offers_offer_view_load_block_json');
-        } else {
-            $resultPage->addHandle('offers_offer_view_load_block_plain');
         }
 
         if ($block) {
@@ -86,7 +84,6 @@ class LoadBlock extends Action
         $result = $resultPage->getLayout()->renderElement('content');
         if ($request->getParam('as_js_varname')) {
             $this->_session->setUpdateResult($result);
-
             return $this->resultRedirectFactory->create()->setPath('offers/*/showUpdateResult');
         }
 
@@ -94,57 +91,108 @@ class LoadBlock extends Action
     }
 
     /**
+     * Initialize offer from request parameters
+     *
      * @throws LocalizedException
      */
     private function initOffer(): void
     {
-        $id = $this->getRequest()->getParam('entity_id');
+        $entityId = $this->getRequest()->getParam('entity_id');
 
-        try {
-            $offer = $this->offerRepository->getById((int)$id);
-        } catch (NoSuchEntityException $e) {
+        if (!$entityId) {
+            $message = __('Offer ID is required.');
+            $this->messageManager->addErrorMessage($message);
             $this->_actionFlag->set('', self::FLAG_NO_DISPATCH, true);
-            throw new LocalizedException(__('This offer no longer exists.'));
+            throw new LocalizedException($message);
         }
 
-        $this->coreRegistry->register('current_offer', $offer);
-
+        try {
+            $offer = $this->offerRepository->getById((int)$entityId);
+            $this->coreRegistry->register(self::CURRENT_OFFER_REGISTRY_KEY, $offer);
+        } catch (NoSuchEntityException $e) {
+            $message = __('This offer no longer exists.');
+            $this->messageManager->addErrorMessage($message);
+            $this->_actionFlag->set('', self::FLAG_NO_DISPATCH, true);
+            throw new LocalizedException($message);
+        }
     }
 
     /**
-     * @throws LocalizedException
+     * Initialize quote session with offer data
+     *
+     * @return void
      */
-    private function getMagentoQuote(): CartInterface
+    private function initQuoteSession(): void
     {
-        if (!$this->coreRegistry->registry('current_quote')) {
-            $currentOffer = $this->getCurrentOffer();
-            $quote = $currentOffer->getMagentoQuote();
-            $this->coreRegistry->unregister('current_quote');
-            $this->coreRegistry->register('current_quote', $quote);
+        $offer = $this->getCurrentOffer();
+
+        if (!$offer) {
+            return;
         }
 
-        return $this->coreRegistry->registry('current_quote');
+        // Reset session to clean state
+        $this->getSession()->_resetState();
+
+        // Set quote ID if available
+        if ($quoteId = $offer->getQuoteId()) {
+            $this->getSession()->setQuoteId((int)$quoteId);
+        }
+
+        // Set customer ID if available
+        if ($customerId = $offer->getCustomerId()) {
+            $this->getSession()->setCustomerId((int)$customerId);
+        }
+
+        // Set store ID if available
+        if ($storeId = $offer->getStoreId()) {
+            $this->getSession()->setStoreId((int)$storeId);
+        }
     }
 
-    private function getCurrentOffer(): OfferInterface
+    /**
+     * Initialize Magento quote in registry
+     *
+     * @return void
+     */
+    private function initMagentoQuote(): void
     {
-        return $this->coreRegistry->registry('current_offer');
+        // Check if quote is already registered
+        if ($this->coreRegistry->registry(self::CURRENT_QUOTE_REGISTRY_KEY)) {
+            return;
+        }
+
+        $offer = $this->getCurrentOffer();
+
+        if (!$offer) {
+            return;
+        }
+
+        // Try to get quote from session first
+        $quote = $this->getSession()->getQuote();
+
+        if ($quote->getId()) {
+            $this->coreRegistry->register(self::CURRENT_QUOTE_REGISTRY_KEY, $quote);
+        }
+
+        // Override with offer's Magento quote if available
+        $quote = $offer->getMagentoQuote();
+
+        if ($quote->getId()) {
+            $this->coreRegistry->unregister(self::CURRENT_QUOTE_REGISTRY_KEY);
+            $this->coreRegistry->register(self::CURRENT_QUOTE_REGISTRY_KEY, $quote);
+        }
     }
 
-    private function initSession(): void
+   /* private function initSession(): void
     {
-        /**
-         * Identify quote
-         */
+
         if ($offerId = $this->getRequest()->getParam('entity_id')) {
             $this->_getSession()->setOfferId((int)$offerId);
         } elseif ($offer = $this->getCurrentOffer()) {
             $this->_getSession()->setQuoteId((int)$offer->getQuoteId());
         }
 
-        /**
-         * Identify customer
-         */
+
         $this->_getSession()->setCustomerId(null);
         if ($customerId = $this->getRequest()->getParam('customer_id')) {
             $this->_getSession()->setCustomerId((int)$customerId);
@@ -154,9 +202,7 @@ class LoadBlock extends Action
             }
         }
 
-        /**
-         * Identify store
-         */
+
         if ($storeId = $this->getRequest()->getParam('store_id')) {
             $this->_getSession()->setStoreId((int)$storeId);
         } elseif ($offer = $this->getCurrentOffer()) {
@@ -165,6 +211,26 @@ class LoadBlock extends Action
             }
         }
 
+    }*/
+
+    private function getMagentoQuote(): CartInterface
+    {
+        return $this->coreRegistry->registry('current_quote');
+    }
+
+    private function getCurrentOffer(): OfferInterface
+    {
+        return $this->coreRegistry->registry('current_offer');
+    }
+
+    /**
+     * Get backend quote session
+     *
+     * @return Quote
+     */
+    private function getSession(): Quote
+    {
+        return $this->backendQuoteSession;
     }
 
     private function processActionData(): void
@@ -213,23 +279,19 @@ class LoadBlock extends Action
        // $this->quoteRepository-sa
 
         //$this->getMagentoQuote()->saveQuote();
-
     }
 
 
-    public function saveQuote()
+    private function saveQuote(): void
     {
         $magentoQuote = $this->getMagentoQuote();
 
         if (!$magentoQuote->getId()) {
-            return $this;
+            return;
         }
 
-       // $magentoQuote->t();
         $magentoQuote->collectTotals();
         $this->quoteRepository->save($magentoQuote);
-        //$magentoQuote->save();
 
-        return $this;
     }
 }

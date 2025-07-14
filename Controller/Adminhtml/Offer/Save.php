@@ -21,6 +21,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Backend\Model\View\Result\Redirect;
 use OneMoveTwo\Offers\Model\Data\Offer;
 use OneMoveTwo\Offers\Api\OfferRepositoryInterface;
+use OneMoveTwo\Offers\Api\OfferManagementInterface;
 
 class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
 {
@@ -35,6 +36,7 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
         private readonly AddressFactory $addressFactory,
         private readonly CustomerManagement $customerManagement,
         private readonly OfferCreator $offerCreator,
+        private readonly OfferManagementInterface $offerManagement,
         private readonly OfferRepositoryInterface $offerRepository,
         private readonly QuoteCartManagement $quoteCartManagement
     ) {
@@ -132,13 +134,14 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
                     ->setStatus('New')
                     ->setQuoteId((int)$quoteId);
 
-                $this->offerRepository->save($offer);
+                $this->offerManagement->createOffer($offer);
+
                 $this->_getSession()->clearStorage();
                 $this->messageManager->addSuccessMessage(__('You created the offer.'));
                 $this->_eventManager->dispatch('admin_offers_offer_create_after', ['offer' => $offer]);
             } else {
                 $this->_getSession()->clearStorage();
-                $this->offerRepository->save($offer);
+                $this->offerManagement->updateOffer($offer);
                 $this->messageManager->addSuccessMessage(__('You updated the quote.'));
             }
 
