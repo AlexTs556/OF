@@ -11,7 +11,7 @@ use OneMoveTwo\Offers\Api\OfferItemRepositoryInterface;
 use OneMoveTwo\Offers\Api\OfferManagementInterface;
 //use OneMoveTwo\Offers\Service\Calculator\TotalsCalculator;
 //use OneMoveTwo\Offers\Service\Email\OfferEmailSender;
-use OneMoveTwo\Offers\Service\History\OfferHistoryManager;
+use OneMoveTwo\Offers\Service\History\OfferHistoryManagementService;
 use OneMoveTwo\Offers\Service\Validation\OfferValidator;
 
 readonly class OfferManagementService implements OfferManagementInterface
@@ -24,7 +24,7 @@ readonly class OfferManagementService implements OfferManagementInterface
        /* private TotalsCalculator             $totalsCalculator,
         private OfferEmailSender             $emailSender,
         private OfferHistoryManager          $historyManager*/
-        private OfferHistoryManager          $historyManager,
+        private OfferHistoryManagementService          $historyManager,
         private OfferValidator               $offerValidator
     ) {
     }

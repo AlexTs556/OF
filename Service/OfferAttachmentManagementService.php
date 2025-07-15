@@ -11,7 +11,7 @@ use OneMoveTwo\Offers\Api\Data\OfferAttachmentInterface;
 use OneMoveTwo\Offers\Api\Data\OfferAttachmentInterfaceFactory;
 use OneMoveTwo\Offers\Service\File\AttachmentFileManager;
 use OneMoveTwo\Offers\Service\Validation\AttachmentValidator;
-use OneMoveTwo\Offers\Service\History\OfferHistoryManager;
+use OneMoveTwo\Offers\Service\History\OfferHistoryManagementService;
 use OneMoveTwo\Offers\Service\FileUploadService;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -26,7 +26,7 @@ readonly class OfferAttachmentManagementService implements OfferAttachmentManage
         private OfferAttachmentInterfaceFactory    $attachmentFactory,
         private AttachmentFileManager              $fileManager,
         private AttachmentValidator                $attachmentValidator,
-        private OfferHistoryManager                $historyManager,
+        private OfferHistoryManagementService                $historyManager,
         private FileUploadService                  $fileUploadService,
         private UrlInterface                       $urlBuilder,
         private LoggerInterface                    $logger

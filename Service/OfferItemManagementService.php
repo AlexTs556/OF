@@ -12,7 +12,7 @@ use OneMoveTwo\Offers\Api\Data\OfferItemInterface;
 use OneMoveTwo\Offers\Api\Data\OfferItemInterfaceFactory;
 use OneMoveTwo\Offers\Service\Validation\OfferItemValidator;
 use OneMoveTwo\Offers\Service\Calculator\ItemCalculator;
-use OneMoveTwo\Offers\Service\History\OfferHistoryManager;
+use OneMoveTwo\Offers\Service\History\OfferHistoryManagementService;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -26,7 +26,7 @@ readonly class OfferItemManagementService implements OfferItemManagementInterfac
         private OfferItemInterfaceFactory    $itemFactory,
         private OfferItemValidator           $itemValidator,
         private ItemCalculator               $itemCalculator,
-        private OfferHistoryManager          $historyManager,
+        private OfferHistoryManagementService          $historyManager,
         private ProductRepositoryInterface   $productRepository
     ) {
     }

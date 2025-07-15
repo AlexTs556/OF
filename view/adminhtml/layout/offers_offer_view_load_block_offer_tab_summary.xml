@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferSummary" name="offer_tab_summary" template="OneMoveTwo_Offers::offer/view/tab/summary.phtml">
+                <block class="Magento\Backend\Block\Template" template="OneMoveTwo_Offers::offer/view/tab/summary/address.phtml" name="summary_offer_customer_address">
+                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo\Address" template="OneMoveTwo_Offers::offer/view/tab/info/address/billing.phtml" name="summary_offer_customer_billing_address"/>
+                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo\Address" template="OneMoveTwo_Offers::offer/view/tab/info/address/shipping.phtml" name="summary_offer_customer_shipping_address"/>
+                </block>
+
+                <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\OfferItems" template="OneMoveTwo_Offers::offer/view/tab/summary/items.phtml" name="summary_items">
+                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Items\Grid" template="OneMoveTwo_Offers::offer/view/tab/summary/items/grid.phtml" name="summary_items_grid">
+                        <block class="Magento\Backend\Block\Template" template="OneMoveTwo_Offers::offer/view/tab/summary/items/grid/thead.phtml" name="summary_items_grid_thead"/>
+                    </block>
+                </block>
+
+                <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Totals" template="OneMoveTwo_Offers::offer/view/tab/summary/totals.phtml" name="summary_totals">
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Shipping" template="Magento_Sales::order/create/totals/shipping.phtml" name="shipping_total_renderer"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Discount" template="Magento_Sales::order/create/totals/default.phtml" name="discount_total_renderer"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Grandtotal" template="Magento_Sales::order/create/totals/grandtotal.phtml" name="grand_total_total_renderer"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Subtotal" template="Magento_Sales::order/create/totals/subtotal.phtml" name="subtotal_total_renderer"/>
+                    <block class="Magento\Sales\Block\Adminhtml\Order\Create\Totals\Tax" template="Magento_Sales::order/create/totals/tax.phtml" name="tax_total_renderer"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

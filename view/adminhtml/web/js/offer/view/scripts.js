@@ -764,8 +764,7 @@ define([
                 'convert',
                 'giftmessage',
                 'billing_method',
-                'summary_items',
-                'summary_totals'
+                'offer_tab_summary',
             ];
             // prepare additional fields and filtered items of products
             var fieldsPrepare = {};
@@ -791,7 +790,7 @@ define([
          */
         closeProductSearchGrid: function () {
             this.hideArea('search');
-            this.loadArea(['items', 'shipping_method', 'billing_method', 'totals', 'convert', 'giftmessage'], true);
+            this.loadArea(['items', 'shipping_method', 'billing_method', 'totals', 'convert', 'giftmessage','offer_tab_summary'], true);
         },
 
         selectCustomer: function (grid, event) {
@@ -869,8 +868,7 @@ define([
                         'totals',
                         'convert',
                         'giftmessage',
-                        'summary_items',
-                        'summary_totals'
+                        'offer_tab_summary',
                     ],
                     true,
                     data
@@ -925,7 +923,7 @@ define([
                 if (!response.ok) {
                     return;
                 }
-                this.loadArea(['items', 'shipping_method', 'billing_method', 'totals', 'convert', 'giftmessage'], true);
+                this.loadArea(['items', 'shipping_method', 'billing_method', 'totals', 'convert', 'giftmessage','offer_tab_summary'], true);
             }.bind(this));
             // show item configuration
             itemId = itemId ? itemId : productId;
@@ -946,8 +944,7 @@ define([
                 'totals',
                 'convert',
                 'giftmessage',
-                'summary_items',
-                'summary_totals'
+                'offer_tab_summary',
             ];
 
             // prepare additional fields
