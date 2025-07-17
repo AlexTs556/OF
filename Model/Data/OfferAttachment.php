@@ -111,6 +111,27 @@ class OfferAttachment extends AbstractModel implements OfferAttachmentInterface,
     }
 
     /**
+     * Get file size
+     *
+     * @return int
+     */
+    public function getFileSize(): int
+    {
+        return (int)$this->getData(self::FILE_SIZE);
+    }
+
+    /**
+     * Set file size
+     *
+     * @param int $fileSize
+     * @return $this
+     */
+    public function setFileSize(int $fileSize): OfferAttachmentInterface
+    {
+        return $this->setData(self::FILE_SIZE, $fileSize);
+    }
+
+    /**
      * @inheritDoc
      */
     public function getSortOrder(): int

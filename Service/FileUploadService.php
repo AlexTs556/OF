@@ -14,9 +14,9 @@ use Psr\Log\LoggerInterface;
 
 class FileUploadService
 {
-    private const UPLOAD_DIR = 'offers/attachments';
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx'];
-    private const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private const string UPLOAD_DIR = 'offers/attachments';
+    private const array ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx'];
+    private const int MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     public function __construct(
         private readonly UploaderFactory $uploaderFactory,
@@ -36,10 +36,6 @@ class FileUploadService
     public function processUploadedFiles(array $files, array $attachmentsInfo = []): array
     {
         $attachments = [];
-
-        if (!is_array($files)) {
-            return $attachments;
-        }
 
         foreach ($files as $index => $fileData) {
             if ($this->isValidUpload($fileData)) {
@@ -112,6 +108,8 @@ class FileUploadService
             $attachment->setFilePath(self::UPLOAD_DIR . '/' . ltrim($result['file'], '/'));
             $attachment->setFileName($fileInfo['name'] ?? $result['name']);
             $attachment->setFileType($this->determineFileType($fileData, $fileInfo));
+
+            $attachment->setFileSize($fileInfo['size'] ?? 0);
             $attachment->setSortOrder($this->determineSortOrder($fileInfo));
 
             return $attachment;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OneMoveTwo\Offers\Service;
 
+use Magento\Framework\Exception\LocalizedException;
 use OneMoveTwo\Offers\Api\Data\OfferInterface;
 use OneMoveTwo\Offers\Api\Data\OfferInterfaceFactory;
 use OneMoveTwo\Offers\Api\OfferRepositoryInterface;
@@ -94,7 +95,7 @@ readonly class OfferManagementService implements OfferManagementInterface
 
         // Process attachments if provided
         if (!empty($attachments)) {
-            $this->processAttachments($savedOffer->getEntityId(), $attachments);
+            $this->processAttachments($savedOffer, $attachments);
         }
 
         // Recalculate totals
@@ -309,9 +310,24 @@ readonly class OfferManagementService implements OfferManagementInterface
         }
     }
 
-    private function processAttachments(int $offerId, array $attachments): void
+    /**
+     * @throws LocalizedException
+     */
+    private function processAttachments(OfferInterface $offer, array $attachments)
     {
-        $this->offerAttachmentManagementService->uploadAttachment($offerId);
+        if (isset($attachment['add'])) {
+            $this->offerAttachmentManagementService->processFileUploads(
+                $offer->getId(),
+                $attachments,
+                $attachments
+            );
+        }
+
+        if (isset($attachment['remove'])) {
+            foreach ($attachments as $attachmentId) {
+                $this->offerAttachmentManagementService->removeAttachment($attachmentId);
+            }
+        }
     }
 
     private function copyOfferItems(int $fromOfferId, int $toOfferId): void

@@ -192,6 +192,22 @@ class Offer extends AbstractModel implements OfferInterface, IdentityInterface
         return $this->setData(self::QUOTE_ID, $quoteId);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getComment(): ?string
+    {
+        return $this->getData(self::COMMENT);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setComment(?string $comment): OfferInterface
+    {
+        return $this->setData(self::COMMENT, $comment);
+    }
+
     public function getOrderId(): ?int
     {
         return $this->getData(self::ORDER_ID) ? (int)$this->getData(self::ORDER_ID) : null;

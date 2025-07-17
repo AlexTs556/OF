@@ -17,11 +17,16 @@ use OneMoveTwo\Offers\Api\OfferRepositoryInterface;
 use OneMoveTwo\Offers\Api\Data\OfferAttachmentInterfaceFactory;
 use OneMoveTwo\Offers\Api\Data\OfferHistoryInterfaceFactory;
 use OneMoveTwo\Offers\Api\OfferHistoryRepositoryInterface;
+use Magento\Framework\View\Result\PageFactory;
 use Psr\Log\LoggerInterface;
 
 class Info extends \Magento\Backend\App\Action implements HttpPostActionInterface
 {
-    private const UPLOAD_DIR = 'offers/attachments';
+    private const string UPLOAD_DIR = 'offers/attachments';
+
+    private const array BLOCK_FOR_UPDATE = [
+        'offer_tab_summary'
+    ];
 
     public function __construct(
         private readonly OfferManagementInterface $offerManagement,
@@ -30,6 +35,7 @@ class Info extends \Magento\Backend\App\Action implements HttpPostActionInterfac
         private readonly JsonFactory $jsonFactory,
         private readonly OfferHistoryInterfaceFactory $offerHistoryFactory,
         private readonly OfferHistoryRepositoryInterface $historyRepository,
+        private readonly PageFactory $resultPageFactory,
         private readonly LoggerInterface $logger,
         Context $context
     ) {
@@ -84,12 +90,15 @@ class Info extends \Magento\Backend\App\Action implements HttpPostActionInterfac
 
             $continueEdit = isset($data['back']) && $data['back'] === 'continue';
 
+            $this->preparingToUpdateBlockContent();
+
             return $result->setData([
                 'success' => true,
                 'message' => __('Offer saved successfully'),
                 'offer_id' => $updatedOffer->getEntityId(),
                 'attachments_count' => count($processedAttachments),
-                'redirect_url' => $continueEdit ? null : $this->getUrl('*/*/index')
+                'redirect_url' => $continueEdit ? null : $this->getUrl('*/*/index'),
+                'show_update_result_url' => $this->getUrl('offers/*/showUpdateResult'),
             ]);
 
         } catch (\Exception $e) {
@@ -104,6 +113,16 @@ class Info extends \Magento\Backend\App\Action implements HttpPostActionInterfac
                 'message' => __('Error saving offer: %1', $e->getMessage())
             ]);
         }
+    }
+
+    private function preparingToUpdateBlockContent(): void
+    {
+        $resultPage = $this->resultPageFactory->create();
+        foreach (self::BLOCK_FOR_UPDATE as $block) {
+            $resultPage->addHandle('offers_offer_view_load_block_' . $block);
+        }
+        $result = $resultPage->getLayout()->renderElement('content');
+        $this->_session->setUpdateResult($result);
     }
 
     /**

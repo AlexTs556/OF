@@ -30,17 +30,6 @@ interface OfferAttachmentManagementInterface
     ): OfferAttachmentInterface;
 
     /**
-     * Update attachment metadata
-     *
-     * @param int $attachmentId
-     * @param string|null $fileName
-     * @param int|null $sortOrder
-     * @return \OneMoveTwo\Offers\Api\Data\OfferAttachmentInterface
-     * @throws LocalizedException
-     */
-    public function updateAttachment(int $attachmentId, ?string $fileName = null, ?int $sortOrder = null): OfferAttachmentInterface;
-
-    /**
      * Remove attachment and delete file
      *
      * @param int $attachmentId
@@ -57,26 +46,6 @@ interface OfferAttachmentManagementInterface
      * @throws NoSuchEntityException
      */
     public function getAttachmentContent(int $attachmentId): string;
-
-    /**
-     * Copy attachment to another offer
-     *
-     * @param int $attachmentId
-     * @param int $targetOfferId
-     * @return \OneMoveTwo\Offers\Api\Data\OfferAttachmentInterface
-     * @throws LocalizedException
-     */
-    public function copyAttachmentToOffer(int $attachmentId, int $targetOfferId): OfferAttachmentInterface;
-
-    /**
-     * Reorder attachments
-     *
-     * @param int $offerId
-     * @param array $attachmentOrder Array of attachment_id => sort_order
-     * @return bool
-     * @throws LocalizedException
-     */
-    public function reorderAttachments(int $offerId, array $attachmentOrder): bool;
 
     /**
      * Get attachment download URL

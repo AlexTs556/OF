@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace OneMoveTwo\Offers\Controller\Adminhtml\Offer\View;
 
+use Exception;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product\Type\AbstractType;
+use Magento\Framework\DataObject\Factory as ObjectFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
+use OneMoveTwo\Offers\Api\Data\OfferHistoryInterfaceFactory;
+use OneMoveTwo\Offers\Api\OfferManagementInterface;
 use Psr\Log\LoggerInterface;
 use OneMoveTwo\Offers\Model\OfferRepository;
 use Magento\Framework\Controller\Result\RawFactory;
@@ -16,7 +22,11 @@ use Magento\Backend\Model\Session\Quote;
 use Magento\Quote\Model\QuoteRepository;
 use Magento\Quote\Api\Data\CartInterface;
 use OneMoveTwo\Offers\Api\Data\OfferInterface;
+use OneMoveTwo\Offers\Api\Data\OfferItemInterfaceFactory;
 use Magento\Backend\App\Action;
+use OneMoveTwo\Offers\Service\OfferAttachmentManagementService;
+use OneMoveTwo\Offers\Helper\Data as OfferHelper;
+use OneMoveTwo\Offers\Model\Converter\QuoteToOfferItem;
 
 class LoadBlock extends Action
 {
@@ -35,10 +45,17 @@ class LoadBlock extends Action
         private readonly QuoteRepository $quoteRepository,
         private readonly Registry $coreRegistry,
         private readonly PageFactory $resultPageFactory,
+        private readonly ProductRepositoryInterface $productRepository,
         private readonly LoggerInterface $logger,
-        protected readonly Quote $backendQuoteSession,
+        private readonly ObjectFactory $objectFactory,
+        private readonly OfferItemInterfaceFactory $offerItemFactory,
+        private readonly OfferHistoryInterfaceFactory $offerHistoryFactory,
+        private readonly OfferAttachmentManagementService $attachmentManagement,
+        private readonly OfferManagementInterface $offerManagement,
+        private readonly QuoteToOfferItem $quoteToOfferItemConverter,
+        private readonly Quote $backendQuoteSession,
         private readonly OfferRepository $offerRepository,
-        protected readonly RawFactory $resultRawFactory,
+        private readonly RawFactory $resultRawFactory,
     ) {
         parent::__construct($context);
     }
@@ -233,6 +250,9 @@ class LoadBlock extends Action
         return $this->backendQuoteSession;
     }
 
+    /**
+     * @throws LocalizedException
+     */
     private function processActionData(): void
     {
         $eventData = [
@@ -241,7 +261,7 @@ class LoadBlock extends Action
             'session' => $this->_getSession(),
         ];
 
-        $this->_eventManager->dispatch('adminhtml_quotation_quote_view_process_data_before', $eventData);
+        $this->_eventManager->dispatch('adminhtml_offer_view_process_data_before', $eventData);
 
         /**
          * Adding product to quote from shopping cart, wishlist etc.
@@ -255,8 +275,12 @@ class LoadBlock extends Action
          */
         if ($this->getRequest()->has('item') && !$this->getRequest()->getPost('update_items')) {
             $items = $this->getRequest()->getPost('item');
-            $this->getCurrentOffer()->addItems($items);
+            $this->addItemsToQuote($items);
         }
+
+        $this->saveQuote();
+
+        $this->updateOfferData();
 
         /**
          * Set Subtotal Proposal
@@ -272,14 +296,135 @@ class LoadBlock extends Action
             'offer_model' => $this->getCurrentOffer(),
             'request' => $this->getRequest()->getPostValue(),
         ];
-        $this->_eventManager->dispatch('adminhtml_offers_offer_view_process_data', $eventData);
-
-        $this->saveQuote();
+        $this->_eventManager->dispatch('adminhtml_offer_view_process_data_after', $eventData);
 
        // $this->quoteRepository-sa
 
         //$this->getMagentoQuote()->saveQuote();
     }
+
+    private function addItemsToQuote(array $items): void
+    {
+        foreach ($items as $productId => $productData) {
+            try {
+                $product = $this->productRepository->getById($productId, false, $this->getCurrentOffer()->getStoreId());
+
+                if (isset($productData['qty'])) {
+                    $request = $this->objectFactory->create(['qty' => $productData['qty']]);
+                }
+
+                $item = $this->getMagentoQuote()->addProduct(
+                    $product,
+                    $request,
+                    AbstractType::PROCESS_MODE_FULL
+                );
+
+                $item->save();
+            } catch (LocalizedException|Exception $e) {
+                $this->messageManager->addErrorMessage($e->getMessage());
+            }
+        }
+
+    }
+
+    /**
+     * @throws LocalizedException
+     */
+    private function updateOfferData(): void
+    {
+        try {
+            $data = $this->getRequest()->getPostValue();
+            $offer = $this->getCurrentOffer();
+            $offer->addData($data);
+
+            $offerItems = [];
+            if ($this->getRequest()->has('item') && !$this->getRequest()->getPost('update_items')) {
+                $quoteItems = $this->getMagentoQuote()->getAllItems();
+                foreach ($quoteItems as $quoteItem) {
+                    $offerItems[] = $this->quoteToOfferItemConverter->convert($quoteItem, $offer->getEntityId());
+                }
+            }
+
+            $offerAttachments = [];
+            // Then process attachments separately
+            $files = $this->getRequest()->getFiles('attachments') ?? [];
+            if ($files && is_array($files) && !empty($files)) {
+                if (isset($data['attachments_info'])) {
+                    $offerAttachments = json_decode($data['attachments_info'], true) ?: [];
+                }
+
+                foreach ($offerAttachments as $index => $item) {
+                    if(isset($files[$index])){
+                        $files['add'][$index]['id'] = $item['id'];
+                    }
+                }
+            }
+
+            if (isset($data['delete_attachments'])) {
+                $files['remove'] = json_decode($this->getRequest()->getPostValue('delete_attachments'));
+            }
+
+            $updatedOffer = $this->offerManagement->updateOffer($offer, $offerItems, $files);
+
+
+            // Add history comment if provided
+            //if (!empty($data['comment'])) {
+               // $this->addHistoryComment($updatedOffer, $data['comment']);
+            //}
+
+            // Send email if requested
+            //if (!empty($data['offer_email'])) {
+                //$this->offerManagement->sendOfferEmail($updatedOffer->getEntityId());
+            //}
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error saving offer: ' . $e->getMessage(), [
+                'exception' => $e,
+                'data' => $data ?? [],
+                'offer_id' => $data['offer_id'] ?? null
+            ]);
+
+            throw new LocalizedException(__('Error saving offer %1', $data['offer_id']));
+        }
+    }
+
+    /**
+     * Add history comment
+     */
+    private function addHistoryComment($offer, string $comment): void
+    {
+        $offerHistory = $this->offerHistoryFactory->create();
+        $offerHistory->setOfferId((int)$offer->getEntityId());
+        $offerHistory->setStatus($offer->getStatus() ?? 'Updated');
+        $offerHistory->setComment($comment);
+        $offerHistory->setIsCustomerNotified(false);
+        $offerHistory->setVisibleOnStorefront(false);
+        $offerHistory->setCreatedByName($this->getAdminUserName());
+
+        $this->historyRepository->save($offerHistory);
+    }
+
+
+    /*private function setOfferData($offer, array $data): void
+    {
+        if (isset($data['offer_name'])) {
+            $offer->setOfferName($data['offer_name']);
+        }
+
+        if (isset($data['expiry_date'])) {
+            $offer->setExpiryDate($data['expiry_date']);
+        }
+
+        // Handle offer number generation
+        if (isset($data['offer_number_auto_generate']) && $data['offer_number_auto_generate']) {
+            // Auto-generate offer number
+            $offer->setOfferNumber($this->generateOfferNumber());
+        } elseif (isset($data['offer_number'])) {
+            // Use provided offer number
+            $offer->setOfferNumber($data['offer_number']);
+        }
+    }*/
+
 
 
     private function saveQuote(): void

@@ -12,7 +12,6 @@ use OneMoveTwo\Offers\Api\Data\OfferAttachmentInterfaceFactory;
 use OneMoveTwo\Offers\Service\File\AttachmentFileManager;
 use OneMoveTwo\Offers\Service\Validation\AttachmentValidator;
 use OneMoveTwo\Offers\Service\History\OfferHistoryManagementService;
-use OneMoveTwo\Offers\Service\FileUploadService;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
@@ -26,7 +25,7 @@ readonly class OfferAttachmentManagementService implements OfferAttachmentManage
         private OfferAttachmentInterfaceFactory    $attachmentFactory,
         private AttachmentFileManager              $fileManager,
         private AttachmentValidator                $attachmentValidator,
-        private OfferHistoryManagementService                $historyManager,
+        private OfferHistoryManagementService      $historyManager,
         private FileUploadService                  $fileUploadService,
         private UrlInterface                       $urlBuilder,
         private LoggerInterface                    $logger
@@ -43,9 +42,6 @@ readonly class OfferAttachmentManagementService implements OfferAttachmentManage
      */
     public function processFileUploads(int $offerId, array $uploadedFiles, array $filesInfo = []): array
     {
-        // Validate offer exists
-        $this->offerRepository->getById($offerId);
-
         try {
             // Use FileUploadService to handle file uploads and create attachment objects
             $attachmentObjects = $this->fileUploadService->processUploadedFiles($uploadedFiles, $filesInfo);
@@ -192,30 +188,6 @@ readonly class OfferAttachmentManagementService implements OfferAttachmentManage
         }
     }
 
-    public function updateAttachment(int $attachmentId, ?string $fileName = null, ?int $sortOrder = null): OfferAttachmentInterface
-    {
-        $attachment = $this->attachmentRepository->getById($attachmentId);
-
-        if ($fileName !== null) {
-            $attachment->setFileName($fileName);
-        }
-
-        if ($sortOrder !== null) {
-            $attachment->setSortOrder($sortOrder);
-        }
-
-        $savedAttachment = $this->attachmentRepository->save($attachment);
-
-        // Add to history
-        $this->historyManager->addRecord(
-            $attachment->getOfferId(),
-            'attachment_updated',
-            sprintf('Attachment "%s" updated', $attachment->getFileName())
-        );
-
-        return $savedAttachment;
-    }
-
     public function removeAttachment(int $attachmentId): bool
     {
         $attachment = $this->attachmentRepository->getById($attachmentId);
@@ -257,56 +229,8 @@ readonly class OfferAttachmentManagementService implements OfferAttachmentManage
         return $this->fileManager->getFileContent($attachment->getFilePath());
     }
 
-    public function copyAttachmentToOffer(int $attachmentId, int $targetOfferId): OfferAttachmentInterface
-    {
-        $originalAttachment = $this->attachmentRepository->getById($attachmentId);
-
-        // Validate target offer exists
-        $this->offerRepository->getById($targetOfferId);
-
-        // Copy file
-        $newFilePath = $this->fileManager->copyFile(
-            $originalAttachment->getFilePath(),
-            $targetOfferId,
-            $originalAttachment->getFileName()
-        );
-
-        // Create new attachment record
-        $newAttachment = $this->attachmentFactory->create();
-        $newAttachment->setOfferId($targetOfferId);
-        $newAttachment->setFilePath($newFilePath);
-        $newAttachment->setFileName($originalAttachment->getFileName());
-        $newAttachment->setFileType($originalAttachment->getFileType());
-        $newAttachment->setSortOrder($originalAttachment->getSortOrder());
-
-        return $this->attachmentRepository->save($newAttachment);
-    }
-
-    public function reorderAttachments(int $offerId, array $attachmentOrder): bool
-    {
-        // Validate offer exists
-        $this->offerRepository->getById($offerId);
-
-        foreach ($attachmentOrder as $attachmentId => $sortOrder) {
-            try {
-                $attachment = $this->attachmentRepository->getById($attachmentId);
-                if ($attachment->getOfferId() == $offerId) {
-                    $attachment->setSortOrder($sortOrder);
-                    $this->attachmentRepository->save($attachment);
-                }
-            } catch (NoSuchEntityException $e) {
-                // Skip non-existent attachments
-                continue;
-            }
-        }
-
-        return true;
-    }
-
     public function getDownloadUrl(int $attachmentId): string
     {
-        $attachment = $this->attachmentRepository->getById($attachmentId);
-
         return $this->urlBuilder->getUrl(
             'onemovetwo_offers/attachment/download',
             ['id' => $attachmentId]

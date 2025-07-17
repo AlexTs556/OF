@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo" name="offer_tab_info" template="OneMoveTwo_Offers::offer/view/tab/info.phtml">
+                <block class="Magento\Backend\Block\Template" template="OneMoveTwo_Offers::offer/view/tab/info/address.phtml" name="offer_customer_address">
+                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo\Address" template="OneMoveTwo_Offers::offer/view/tab/info/address/billing.phtml" name="offer_customer_billing_address"/>
+                    <block class="OneMoveTwo\Offers\Block\Adminhtml\Offer\View\Tab\OfferInfo\Address" template="OneMoveTwo_Offers::offer/view/tab/info/address/shipping.phtml" name="offer_customer_shipping_address"/>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

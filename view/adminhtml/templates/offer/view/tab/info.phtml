@@ -486,13 +486,13 @@
     }
 </style>
 
-<div class="admin-form-container">
+<div class="admin-form-container" id="offer-offer_tab_info">
     <div class="form-header">
-        Offer Information
+        <?= __('Offer Information') ?>
     </div>
 
     <div class="form-content">
-        <form id="offer_info" action="<?= $escaper->escapeUrl($block->getSaveInfoUrl())?>">
+        <form id="offer_info" action="<?= $escaper->escapeUrl($block->getLoadBlockUrl($block->getOffer()->getEntityId()))?>">
 
             <?= $block->getBlockHtml('formkey') ?>
 
@@ -500,19 +500,19 @@
 
             <!-- Version -->
             <div class="form-row">
-                <div class="form-label">Version</div>
+                <div class="form-label"><?= __('Version') ?></div>
                 <div class="form-field">
                     <select class="form-select form-control-medium">
-                        <option value="1" selected>Version 1</option>
-                        <option value="2">Version 2</option>
-                        <option value="3">Version 3</option>
+                        <option value="1" selected><?= __('Version') ?> 1</option>
+                        <option value="2"><?= __('Version') ?> 2</option>
+                        <option value="3"><?= __('Version') ?> 3</option>
                     </select>
                 </div>
             </div>
 
             <!-- Customer -->
             <div class="form-row">
-                <div class="form-label">Customer</div>
+                <div class="form-label"><?= __('Customer') ?></div>
                 <div class="form-field">
                     <div class="form-field-inline">
                         <input type="text" class="form-control form-control-wide disabled" value="<?= $block->getCustomerName()?>" readonly>
@@ -524,26 +524,26 @@
 
             <!-- Offer via Email -->
             <div class="form-row">
-                <div class="form-label">Offer via Email</div>
+                <div class="form-label"><?= __('Offer via Email') ?></div>
                 <div class="form-field">
                     <div class="checkbox-container">
                         <input type="checkbox" name="offer_email" id="offer_email" checked>
-                        <label for="offer_email">Yes</label>
+                        <label for="offer_email"><?= __('Yes') ?></label>
                     </div>
                 </div>
             </div>
 
             <!-- Offer Name -->
             <div class="form-row">
-                <div class="form-label">Offer Name</div>
+                <div class="form-label"><?= __('Offer Name') ?></div>
                 <div class="form-field">
-                    <input type="text" name="offer_name" class="form-control form-control-wide" placeholder="Offer Name" value="<?= $block->getOffer()?->getOfferName()?>">
+                    <input type="text" name="offer_name" class="form-control form-control-wide" placeholder="<?= __('Offer Name') ?>" value="<?= $block->getOffer()?->getOfferName()?>">
                 </div>
             </div>
 
             <!-- Offer Number -->
             <div class="form-row">
-                <div class="form-label">Offer Number</div>
+                <div class="form-label"><?= __('Offer Number') ?></div>
                 <div class="form-field">
                     <div class="form-field-inline">
                         <input
@@ -554,7 +554,7 @@
                             value="<?= $block->getOffer()?->getOfferNumber()?>">
                         <div class="checkbox-container">
                             <input type="checkbox" name="offer_number_auto_generate" id="auto_generate">
-                            <label for="auto_generate">Auto generate</label>
+                            <label for="auto_generate"><?= __('Auto generate') ?></label>
                         </div>
                     </div>
                 </div>
@@ -562,18 +562,18 @@
 
             <!-- Sketches -->
             <div class="form-row">
-                <div class="form-label">Sketches</div>
+                <div class="form-label"><?= __('Sketches') ?></div>
                 <div class="form-field">
-                    <div class="file-list">
-                        <div class="file-drop-zone">Drag and drop files here or click the button to select.</div>
+                    <div class="file-list" id="file-list-container">
+                        <!-- Existing files will be populated here by JavaScript -->
                     </div>
-                    <button type="button" class="btn btn-secondary">Upload Files</button>
+                    <button type="button" class="btn btn-secondary"><?= __('Upload Files') ?></button>
                 </div>
             </div>
 
             <!-- Consultant -->
             <div class="form-row">
-                <div class="form-label">Consultant</div>
+                <div class="form-label"><?= __('Consultant') ?></div>
                 <div class="form-field">
                     <input type="text" name="consultant" class="form-control form-control-wide disabled" value="<?= $block->getCurrentAdminName()?>" readonly>
                 </div>
@@ -581,15 +581,15 @@
 
             <!-- Consultant Comment -->
             <div class="form-row">
-                <div class="form-label">Consultant Comment</div>
+                <div class="form-label"><?= __('Consultant Comment') ?></div>
                 <div class="form-field">
-                    <textarea name="comment" class="form-control form-control-wide textarea-large" placeholder="Comment"></textarea>
+                    <textarea name="comment" class="form-control form-control-wide textarea-large" placeholder="<?= __('Comment') ?>"><?= $block->getOffer()->getComment()?></textarea>
                 </div>
             </div>
 
             <!-- Expiry Date -->
             <div class="form-row">
-                <div class="form-label">Expiry Date</div>
+                <div class="form-label"><?= __('Expiry Date') ?></div>
                 <div class="form-field">
                     <input type="datetime-local" name="expiry_date" class="form-control datetime-input" value="<?=$block->getOffer()->getExpiryDate()?>">
                 </div>
@@ -597,7 +597,7 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="button" class="btn btn-primary">Save and Continue</button>
+                <button type="button" class="btn btn-primary"><?= __('Save and Continue') ?></button>
             </div>
         </form>
     </div>
@@ -606,7 +606,11 @@
 <script type="text/x-magento-init">
     {
         "*": {
-            "offerInfoForm": {}
+            "offerInfoForm": {
+                "existingFiles": <?= json_encode($block->getOfferAttachments() ?? []) ?>,
+                "mediaUrl": "<?= $block->getBaseUrl() ?>pub/media/",
+                "offerId": <?= $block->getOffer()->getEntityId() ?>
+            }
         }
     }
 </script>

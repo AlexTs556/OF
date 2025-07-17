@@ -19,6 +19,7 @@ interface OfferInterface
     public const string CUSTOMER_NAME = 'customer_name';
     public const string STATUS = 'status';
     public const string VERSION = 'version';
+    public const string COMMENT = 'comment';
     public const string PARENT_OFFER_ID = 'parent_offer_id';
     public const string ADMIN_CREATOR_ID = 'admin_creator_id';
     public const string STORE_ID = 'store_id';
@@ -63,6 +64,21 @@ interface OfferInterface
 
     public function getStatus(): string;
     public function setStatus(string $status): self;
+
+    /**
+     * Get comment
+     *
+     * @return string|null
+     */
+    public function getComment(): ?string;
+
+    /**
+     * Set comment
+     *
+     * @param string|null $comment
+     * @return $this
+     */
+    public function setComment(?string $comment): self;
 
     public function getVersion(): int;
     public function setVersion(int $version): self;

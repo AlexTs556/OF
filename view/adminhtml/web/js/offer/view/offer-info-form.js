@@ -25,19 +25,90 @@ define([
                 allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf']
             },
 
+            // Configuration from backend
+            config: {
+                existingFiles: config.existingFiles || [],
+                mediaUrl: config.mediaUrl || '',
+                offerId: config.offerId || null
+            },
+
             // File management properties
             files: new Map(),
+            existingFiles: new Map(),
             fileIdCounter: 0,
+            filesToDelete: [],
 
             /**
              * Initialize the component
              */
             init: function() {
+                this.loadExistingFiles();
                 this.bindEvents();
                 this.initValidation();
                 this.initFileUpload();
                 this.initAutoGenerate();
                 this.updateFileListDisplay();
+            },
+
+            /**
+             * Load existing files from backend
+             */
+            loadExistingFiles: function() {
+                var self = this;
+
+                // Debug: log what we received from backend
+                console.log('Config data received:', this.config);
+                console.log('Existing files from backend:', this.config.existingFiles);
+
+                if (this.config.existingFiles && Object.keys(this.config.existingFiles).length > 0) {
+                    console.log('Processing existing files, count:', Object.keys(this.config.existingFiles).length);
+
+                    // Handle object format (your case) or array format
+                    var filesArray = Array.isArray(this.config.existingFiles)
+                        ? this.config.existingFiles
+                        : Object.values(this.config.existingFiles);
+
+                    filesArray.forEach(function(fileData) {
+                        console.log('Processing file:', fileData);
+
+                        var existingFile = {
+                            id: 'existing_' + (fileData.attachment_id || fileData.id),
+                            name: fileData.file_name || fileData.name || fileData.filename,
+                            path: fileData.file_path || fileData.path,
+                            size: parseInt(fileData.file_size || fileData.size || 0),
+                            type: fileData.file_type || fileData.type || self.getFileTypeFromPath(fileData.file_path || fileData.path),
+                            isExisting: true,
+                            attachmentId: fileData.attachment_id || fileData.id
+                        };
+
+                        console.log('Created existing file object:', existingFile);
+                        self.existingFiles.set(existingFile.id, existingFile);
+                    });
+
+                    console.log('Existing files map after loading:', self.existingFiles);
+                } else {
+                    console.log('No existing files found or empty array');
+                }
+            },
+
+            /**
+             * Get file type from path
+             */
+            getFileTypeFromPath: function(path) {
+                var extension = path.toLowerCase().split('.').pop();
+                switch (extension) {
+                    case 'jpg':
+                    case 'jpeg':
+                        return 'image/jpeg';
+                    case 'png':
+                        return 'image/png';
+                    case 'gif':
+                        return 'image/gif';
+                    case 'pdf':
+                        return 'application/pdf';
+                    default:
+                        return 'application/octet-stream';
+                }
             },
 
             /**
@@ -259,11 +330,16 @@ define([
                     return false;
                 }
 
+                // Check for duplicates in both new and existing files
                 var existingFile = Array.from(this.files.values()).find(function(f) {
                     return f.name === file.name;
                 });
-                if (existingFile) {
-                    this.showError($t('File with name "%1" already added.').replace('%1', file.name));
+                var existingInLoaded = Array.from(this.existingFiles.values()).find(function(f) {
+                    return f.name === file.name;
+                });
+
+                if (existingFile || existingInLoaded) {
+                    this.showError($t('File with name "%1" already exists.').replace('%1', file.name));
                     return false;
                 }
 
@@ -283,20 +359,79 @@ define([
              */
             updateFileListDisplay: function() {
                 var $fileList = $(this.options.fileListContainer);
+                var totalFiles = this.files.size + this.existingFiles.size;
 
-                if (this.files.size === 0) {
+                console.log('Updating file list display');
+                console.log('New files count:', this.files.size);
+                console.log('Existing files count:', this.existingFiles.size);
+                console.log('Total files:', totalFiles);
+
+                if (totalFiles === 0) {
+                    console.log('No files to display, showing drop zone');
                     $fileList.html('<div class="file-drop-zone">Drag and drop files here or click the button to select.</div>');
                     $fileList.removeClass('has-files');
                 } else {
+                    console.log('Files found, displaying file list');
                     $fileList.addClass('has-files');
                     $fileList.empty();
 
                     var self = this;
+
+                    // Display existing files first
+                    console.log('Adding existing files to display');
+                    this.existingFiles.forEach(function(file, fileId) {
+                        console.log('Adding existing file:', file);
+                        var fileItem = self.createExistingFileItem(fileId, file);
+                        $fileList.append(fileItem);
+                    });
+
+                    // Display new files
+                    console.log('Adding new files to display');
                     this.files.forEach(function(file, fileId) {
+                        console.log('Adding new file:', file);
                         var fileItem = self.createFileItem(fileId, file);
                         $fileList.append(fileItem);
                     });
                 }
+            },
+
+            /**
+             * Create existing file item element
+             */
+            createExistingFileItem: function(fileId, file) {
+                var self = this;
+                var $fileItem = $('<div class="file-item existing-file" data-file-id="' + fileId + '"></div>');
+
+                var fileInfoHtml = '<div class="file-info">' +
+                    '<span class="file-name" title="' + file.name + '">' + file.name + '</span>' +
+                    '<span class="file-size">(' + this.formatFileSize(file.size) + ')</span>' +
+                    '<span class="file-status">Saved</span>' +
+                    '</div>';
+
+                var actionsHtml = '<div class="file-actions">';
+                if (this.isImageFile(file.name)) {
+                    actionsHtml += '<button type="button" class="btn-preview" title="Preview">👁</button>';
+                }
+                actionsHtml += '<button type="button" class="btn-download" title="Download">📥</button>';
+                actionsHtml += '<button type="button" class="btn-remove" title="Delete file">✕</button>';
+                actionsHtml += '</div>';
+
+                $fileItem.html(fileInfoHtml + actionsHtml);
+
+                // Bind events
+                $fileItem.find('.btn-remove').on('click', function() {
+                    self.removeExistingFile(fileId);
+                });
+
+                $fileItem.find('.btn-preview').on('click', function() {
+                    self.previewExistingFile(fileId);
+                });
+
+                $fileItem.find('.btn-download').on('click', function() {
+                    self.downloadExistingFile(fileId);
+                });
+
+                return $fileItem;
             },
 
             /**
@@ -333,11 +468,48 @@ define([
             },
 
             /**
+             * Remove existing file from list (mark for deletion)
+             */
+            removeExistingFile: function(fileId) {
+                var self = this;
+                var file = this.existingFiles.get(fileId);
+
+                if (!file) return;
+
+                confirm({
+                    title: $t('Delete File'),
+                    content: $t('Are you sure you want to delete "%1"?').replace('%1', file.name),
+                    actions: {
+                        confirm: function() {
+                            // Mark file for deletion using attachment_id
+                            self.filesToDelete.push(file.attachmentId);
+                            console.log('File marked for deletion:', file.attachmentId);
+                            console.log('Files to delete:', self.filesToDelete);
+                            // Remove from existing files
+                            self.existingFiles.delete(fileId);
+                            self.updateFileListDisplay();
+                        }
+                    }
+                });
+            },
+
+            /**
              * Remove file from list
              */
             removeFile: function(fileId) {
                 this.files.delete(fileId);
                 this.updateFileListDisplay();
+            },
+
+            /**
+             * Preview existing image file
+             */
+            previewExistingFile: function(fileId) {
+                var file = this.existingFiles.get(fileId);
+                if (!file || !this.isImageFile(file.name)) return;
+
+                var fileUrl = this.config.mediaUrl + file.path;
+                this.showImagePreview(file.name, fileUrl);
             },
 
             /**
@@ -347,15 +519,22 @@ define([
                 var file = this.files.get(fileId);
                 if (!file || !this.isImageFile(file.name)) return;
 
-                var self = this;
+                var fileUrl = URL.createObjectURL(file);
+                this.showImagePreview(file.name, fileUrl);
+            },
+
+            /**
+             * Show image preview modal
+             */
+            showImagePreview: function(fileName, imageUrl) {
                 var $modal = $('<div class="preview-modal">' +
                     '<div class="preview-content">' +
                     '<div class="preview-header">' +
-                    '<span class="preview-title">' + file.name + '</span>' +
+                    '<span class="preview-title">' + fileName + '</span>' +
                     '<button class="preview-close">✕</button>' +
                     '</div>' +
                     '<div class="preview-body">' +
-                    '<img src="' + URL.createObjectURL(file) + '" alt="' + file.name + '" class="preview-image">' +
+                    '<img src="' + imageUrl + '" alt="' + fileName + '" class="preview-image">' +
                     '</div>' +
                     '</div>' +
                     '</div>');
@@ -371,6 +550,23 @@ define([
                         $modal.remove();
                     }
                 });
+            },
+
+            /**
+             * Download existing file
+             */
+            downloadExistingFile: function(fileId) {
+                var file = this.existingFiles.get(fileId);
+                if (!file) return;
+
+                var fileUrl = this.config.mediaUrl + file.path;
+                var link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = file.name;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             },
 
             /**
@@ -401,44 +597,6 @@ define([
             },
 
             /**
-             * Get all uploaded files
-             */
-            getAllFiles: function() {
-                return Array.from(this.files.values());
-            },
-
-            /**
-             * Get FormData with all files and attachments info
-             */
-            getFormData: function() {
-                var formData = new FormData();
-                var attachments = [];
-
-                this.files.forEach(function(file, fileId) {
-                    attachments.push({
-                        file: file,
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        id: fileId
-                    });
-                    formData.append('attachments[]', file);
-                });
-
-                // Add attachments info as JSON
-                formData.append('attachments_info', JSON.stringify(attachments.map(function(att) {
-                    return {
-                        name: att.name,
-                        size: att.size,
-                        type: att.type,
-                        id: att.id
-                    };
-                })));
-
-                return formData;
-            },
-
-            /**
              * Validate form including files
              */
             validateForm: function() {
@@ -455,7 +613,9 @@ define([
              * Submit form with all data
              */
             submitForm: function(continueEdit) {
-                var self = this;
+                let self = this,
+                    as_js_varname = 'iFrameResponse',
+                    block = 'offer_tab_summary';
 
                 if (!this.validateForm()) {
                     return false;
@@ -493,6 +653,22 @@ define([
                     };
                 })));
 
+                // Add files to delete
+                if (this.filesToDelete.length > 0) {
+                    formData.append('delete_attachments', JSON.stringify(this.filesToDelete));
+                }
+
+                // Add json flag to get JSON response
+                formData.append('json', '1');
+
+                if (block) {
+                    formData.append('block', block);
+                }
+
+                if (as_js_varname) {
+                    formData.append('as_js_varname', as_js_varname);
+                }
+
                 // Add continue flag
                 if (continueEdit) {
                     formData.append('back', 'continue');
@@ -505,10 +681,10 @@ define([
                     data: formData,
                     processData: false,
                     contentType: false,
-                    dataType: 'json',
+                    dataType: 'text',
                     showLoader: true,
                     success: function(response) {
-                        self.handleSuccess(response, continueEdit);
+                        self.handleAjaxResponse(response, continueEdit);
                     },
                     error: function(xhr) {
                         self.handleError(xhr);
@@ -517,20 +693,155 @@ define([
             },
 
             /**
-             * Handle successful form submission
+             * Handle AJAX response similar to first file logic
              */
-            handleSuccess: function(response, continueEdit) {
-                if (response.success) {
-                    this.showSuccess(response.message || $t('Offer saved successfully'));
+            handleAjaxResponse: function(response, continueEdit) {
+                var self = this;
+                var parsedResponse = null;
 
-                    if (!continueEdit && response.redirect_url) {
-                        setTimeout(function() {
-                            window.location.href = response.redirect_url;
-                        }, 1000);
+                // Handle mixed HTML/JS response like in first file
+                if (typeof response === 'string') {
+                    // Check if response starts with <script> tag (HTML response)
+                    if (response.trim().indexOf('<script>') === 0) {
+                        // Extract JSON directly from response - simple and reliable approach
+                        var jsonStart = response.indexOf('{');
+                        var jsonEnd = response.lastIndexOf('}') + 1;
+
+                        if (jsonStart !== -1 && jsonEnd !== -1) {
+                            var jsonPart = response.substring(jsonStart, jsonEnd);
+                            try {
+                                parsedResponse = JSON.parse(jsonPart);
+                            } catch (e) {
+                                console.error('Failed to parse extracted JSON:', e);
+                                self.showError($t('Invalid response format'));
+                                return;
+                            }
+                        } else {
+                            console.error('No JSON found in script response');
+                            self.showError($t('Invalid response format'));
+                            return;
+                        }
+                    } else {
+                        // Try to parse as direct JSON
+                        try {
+                            parsedResponse = JSON.parse(response);
+                        } catch (e) {
+                            console.error('Failed to parse JSON response:', e);
+                            self.showError($t('Invalid response format'));
+                            return;
+                        }
                     }
                 } else {
-                    this.showError(response.message || $t('Error saving offer'));
+                    parsedResponse = response;
                 }
+
+                if (!parsedResponse) {
+                    self.showError($t('Empty response received'));
+                    return;
+                }
+
+                // Handle different response scenarios like in first file
+                if (parsedResponse.reload) {
+                    location.reload();
+                    return;
+                }
+
+                if (parsedResponse.error) {
+                    self.showError(parsedResponse.message || $t('An error occurred'));
+                    return;
+                }
+
+                if (parsedResponse.ajaxExpired && parsedResponse.ajaxRedirect) {
+                    window.location.href = parsedResponse.ajaxRedirect;
+                    return;
+                }
+
+                // Check if response has blocks to update (any key that's not system keys)
+                var hasBlocks = false;
+                var systemKeys = ['error', 'reload', 'ajaxExpired', 'ajaxRedirect', 'message', 'header', 'redirect_url', 'success'];
+
+                for (var key in parsedResponse) {
+                    if (parsedResponse.hasOwnProperty(key) && systemKeys.indexOf(key) === -1) {
+                        hasBlocks = true;
+                        break;
+                    }
+                }
+
+                // Update blocks if response contains them
+                if (hasBlocks) {
+                    self.updatePageBlocks(parsedResponse);
+                }
+
+                // Show success message
+                var successMessage = parsedResponse.message || $t('Offer saved successfully');
+                self.showSuccess(successMessage);
+
+                // Handle redirect for non-continue operations
+                if (!continueEdit) {
+                    if (parsedResponse.redirect_url) {
+                        setTimeout(function() {
+                            window.location.href = parsedResponse.redirect_url;
+                        }, 1000);
+                    } else {
+                        // Default redirect behavior - but don't reload if blocks were updated
+                        if (!hasBlocks) {
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    }
+                }
+            },
+
+            /**
+             * Update page blocks with response data
+             */
+            updatePageBlocks: function(response) {
+                var self = this;
+
+                // Get area ID function like in first file
+                function getAreaId(area) {
+                    return 'offer-' + area;
+                }
+
+                // Always add message to loading areas like in first file
+                var loadingAreas = Object.keys(response);
+                if (loadingAreas.indexOf('message') === -1) {
+                    loadingAreas.push('message');
+                }
+
+                // Update each block
+                loadingAreas.forEach(function(areaName) {
+                    var blockId = getAreaId(areaName);
+                    var $block = $('#' + blockId);
+
+                    if ($block.length) {
+                        // Only update if message area has content or it's not message area
+                        if (areaName !== 'message' || response[areaName]) {
+                            $block.html(response[areaName]);
+
+                            // Trigger content updated event for reinitializing components
+                            $block.trigger('contentUpdated');
+
+                            // Execute callback if exists (like in first file)
+                            if ($block[0].callback && typeof window[self.getCallbackName(areaName)] === 'function') {
+                                window[self.getCallbackName(areaName)]();
+                            }
+                        }
+                    }
+                });
+
+                // Update page title if provided
+                if (response.header) {
+                    $('.page-actions-inner').attr('data-title', response.header);
+                }
+            },
+
+            /**
+             * Get callback name for area
+             */
+            getCallbackName: function(area) {
+                return area + 'Loaded';
             },
 
             /**

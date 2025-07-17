@@ -17,6 +17,7 @@ interface OfferAttachmentInterface
     public const string OFFER_ID = 'offer_id';
     public const string FILE_PATH = 'file_path';
     public const string FILE_NAME = 'file_name';
+    public const string FILE_SIZE = 'file_size';
     public const string FILE_TYPE = 'file_type';
     public const string SORT_ORDER = 'sort_order';
     public const string CREATED_AT = 'created_at';
@@ -96,6 +97,21 @@ interface OfferAttachmentInterface
      * @return $this
      */
     public function setFileType(string $fileType): self;
+
+    /**
+     * Get file size
+     *
+     * @return int
+     */
+    public function getFileSize(): int;
+
+    /**
+     * Set file size
+     *
+     * @param int $fileSize
+     * @return $this
+     */
+    public function setFileSize(int $fileSize): self;
 
     /**
      * Get sort order

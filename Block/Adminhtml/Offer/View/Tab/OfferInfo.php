@@ -88,9 +88,23 @@ class OfferInfo extends Template implements TabInterface
         return $admin->getUserName();
     }
 
-    public function getSaveInfoUrl(): string
+    /*public function getSaveInfoUrl(): string
     {
         return $this->getUrl('offers/offer/save_info');
+    }*/
+
+    public function getLoadBlockUrl(int $offerId): string
+    {
+        return $this->getUrl('offers/offer_view/loadBlock', ['entity_id' => $offerId]);
+    }
+
+    public function getOfferAttachments(): array
+    {
+        $attachments = $this->getOffer()->getAttachments();
+
+        return array_map(function ($attachment) {
+            return $attachment->getData();
+        }, $attachments);
     }
 
 }

@@ -15,6 +15,7 @@
         <column name="parent_offer_id" xsi:type="int" unsigned="true" nullable="true" comment="Parent Offer ID"/>
         <column name="admin_creator_id" xsi:type="int" unsigned="true" nullable="false" comment="Admin Creator ID"/>
         <column name="store_id" xsi:type="smallint" unsigned="true" nullable="false" comment="Store ID"/>
+        <column name="comment" xsi:type="text" comment="Consultant Comment"/>
         <column name="subtotal" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Subtotal"/>
         <column name="discount_amount" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Discount Amount"/>
         <column name="shipping_amount" xsi:type="decimal" scale="4" precision="20" nullable="false" default="0.0000" comment="Shipping Amount"/>
