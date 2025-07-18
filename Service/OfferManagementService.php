@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OneMoveTwo\Offers\Service;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use OneMoveTwo\Offers\Api\Data\OfferInterface;
 use OneMoveTwo\Offers\Api\Data\OfferInterfaceFactory;
 use OneMoveTwo\Offers\Api\OfferRepositoryInterface;
@@ -25,8 +27,10 @@ readonly class OfferManagementService implements OfferManagementInterface
        /* private TotalsCalculator             $totalsCalculator,
         private OfferEmailSender             $emailSender,
         private OfferHistoryManager          $historyManager*/
-        private OfferHistoryManagementService          $historyManager,
-        private OfferValidator               $offerValidator
+        private OfferHistoryManagementService $historyManager,
+        private OfferValidator               $offerValidator,
+        private ScopeConfigInterface         $scopeConfig,
+        private StoreManagerInterface        $storeManager
     ) {
     }
 
@@ -38,8 +42,8 @@ readonly class OfferManagementService implements OfferManagementInterface
         // Validate offer data
         $this->offerValidator->validate($offer);
 
-        // Generate offer number if not provided
-        if (!$offer->getOfferNumber()) {
+        // Generate offer number if not provided or auto-generate is requested
+        if (!$offer->getOfferNumber() || $offer->getData('auto_generate_number')) {
             $offer->setOfferNumber($this->generateOfferNumber());
         }
 
@@ -84,6 +88,12 @@ readonly class OfferManagementService implements OfferManagementInterface
 
         // Validate offer data
         $this->offerValidator->validate($offer);
+
+        // Check if auto-generate number is requested
+        if ($offer->getData('auto_generate_number')) {
+            // Generate a new offer number using the template
+            $offer->setOfferNumber($this->generateOfferNumber());
+        }
 
         // Update offer
         $savedOffer = $this->offerRepository->save($offer);
@@ -293,7 +303,36 @@ readonly class OfferManagementService implements OfferManagementInterface
     // Private helper methods
     private function generateOfferNumber(): string
     {
-        return 'OF' . date('Y') . str_pad((string)rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        // Check if auto-generate is enabled
+        $autoGenerate = $this->scopeConfig->getValue('offers_general/general/auto_generate_number');
+        if (!$autoGenerate) {
+            // Fallback to the old method if auto-generate is disabled
+            return 'OF' . date('Y') . str_pad((string)rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        }
+
+        // Get the template from configuration
+        $template = $this->scopeConfig->getValue('offers_general/general/offer_number_template');
+        if (empty($template)) {
+            $template = 'OF-{store}-{datetime}-{version}'; // Default template
+        }
+
+        // Get current store ID
+        $storeId = $this->storeManager->getStore()->getId();
+
+        // Generate datetime with milliseconds
+        $datetime = date('YmdHis') . substr(microtime(), 2, 3); // Format: YYYYMMDDHHMMSSmmm
+
+        // Generate a unique version identifier
+        $version = uniqid();
+
+        // Replace placeholders
+        $offerNumber = str_replace(
+            ['{store}', '{datetime}', '{version}'],
+            [$storeId, $datetime, $version],
+            $template
+        );
+
+        return $offerNumber;
     }
 
     private function generateVersionNumber(string $baseNumber): string
@@ -315,17 +354,17 @@ readonly class OfferManagementService implements OfferManagementInterface
      */
     private function processAttachments(OfferInterface $offer, array $attachments)
     {
-        if (isset($attachment['add'])) {
+        if (isset($attachments['add'])) {
             $this->offerAttachmentManagementService->processFileUploads(
-                $offer->getId(),
-                $attachments,
-                $attachments
+                (int)$offer->getId(),
+                $attachments['add'],
+                $attachments['add']
             );
         }
 
-        if (isset($attachment['remove'])) {
-            foreach ($attachments as $attachmentId) {
-                $this->offerAttachmentManagementService->removeAttachment($attachmentId);
+        if (isset($attachments['remove'])) {
+            foreach ($attachments['remove'] as $attachmentId) {
+                $this->offerAttachmentManagementService->removeAttachment((int)$attachmentId);
             }
         }
     }

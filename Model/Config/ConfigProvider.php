@@ -17,6 +17,7 @@ readonly class ConfigProvider
     const string XML_PATH_GENERAL_OFFER_PREFIX = 'offers_general/general/offer_prefix';
     const string XML_PATH_GENERAL_DEFAULT_EXPIRY_DAYS = 'offers_general/general/default_expiry_days';
     const string XML_PATH_GENERAL_AUTO_GENERATE_NUMBER = 'offers_general/general/auto_generate_number';
+    const string XML_PATH_GENERAL_OFFER_NUMBER_TEMPLATE = 'offers_general/general/offer_number_template';
     const string XML_PATH_GENERAL_DEFAULT_STATUS = 'offers_general/statuses/default_status';
     const string XML_PATH_GENERAL_OFFER_STATUSES = 'offers_general/statuses/offer_statuses_grid';
     const string XML_PATH_NOTIFICATIONS_ADMIN_ENABLED = 'offers_notifications/admin_notifications/notify_on_customer_actions';
@@ -58,6 +59,11 @@ readonly class ConfigProvider
         return $this->scopeConfig->isSetFlag(self::XML_PATH_GENERAL_AUTO_GENERATE_NUMBER, $scopeType, $scopeCode);
     }
 
+    public function getOfferNumberTemplate($scopeType = ScopeInterface::SCOPE_STORE, $scopeCode = null): string
+    {
+        return (string)$this->scopeConfig->getValue(self::XML_PATH_GENERAL_OFFER_NUMBER_TEMPLATE, $scopeType, $scopeCode) ?: '';
+    }
+
     public function getDefaultStatus($scopeType = ScopeInterface::SCOPE_STORE, $scopeCode = null): string
     {
         return (string)$this->scopeConfig->getValue(self::XML_PATH_GENERAL_DEFAULT_STATUS, $scopeType, $scopeCode) ?: 'draft';
@@ -67,21 +73,17 @@ readonly class ConfigProvider
     {
         $configValue = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_OFFER_STATUSES, $scopeType, $scopeCode);
 
-        if ($configValue) {
-            try {
-                $statuses = $this->serializer->unserialize($configValue);
-                if (is_array($statuses)) {
-                    usort($statuses, function($a, $b) {
-                        return ($a['sort_order'] ?? 0) <=> ($b['sort_order'] ?? 0);
-                    });
-                    return $statuses;
-                }
-            } catch (\Exception $e) {
-                // Fall back to default
-            }
+        try {
+            $statuses = $this->serializer->unserialize($configValue);
+        } catch (\Exception $e) {
+            return $this->getDefaultStatuses();
         }
 
-        return $this->getDefaultStatuses();
+        if (empty($statuses)) {
+            return $this->getDefaultStatuses();
+        }
+
+        return $statuses;
     }
 
     public function getStatusConfig(string $statusCode, $scopeType = ScopeInterface::SCOPE_STORE, $scopeCode = null): ?array
@@ -175,12 +177,12 @@ readonly class ConfigProvider
     private function getDefaultStatuses(): array
     {
         return [
-            ['code' => 'draft', 'label' => 'Draft', 'is_active' => '1', 'is_locked' => '0', 'is_finalized' => '0', 'sort_order' => '10'],
-            ['code' => 'pending', 'label' => 'Pending Review', 'is_active' => '1', 'is_locked' => '0', 'is_finalized' => '0', 'sort_order' => '20'],
-            ['code' => 'sent', 'label' => 'Sent to Customer', 'is_active' => '1', 'is_locked' => '1', 'is_finalized' => '0', 'sort_order' => '30'],
-            ['code' => 'accepted', 'label' => 'Accepted', 'is_active' => '1', 'is_locked' => '1', 'is_finalized' => '1', 'sort_order' => '40'],
-            ['code' => 'rejected', 'label' => 'Rejected', 'is_active' => '1', 'is_locked' => '1', 'is_finalized' => '1', 'sort_order' => '50'],
-            ['code' => 'expired', 'label' => 'Expired', 'is_active' => '1', 'is_locked' => '1', 'is_finalized' => '1', 'sort_order' => '60']
+            ['code' => 'draft', 'label' => 'Draft'],
+            ['code' => 'pending', 'label' => 'Pending Review'],
+            ['code' => 'sent', 'label' => 'Sent to Customer'],
+            ['code' => 'accepted', 'label' => 'Accepted'],
+            ['code' => 'rejected', 'label' => 'Rejected'],
+            ['code' => 'expired', 'label' => 'Expired']
         ];
     }
 }

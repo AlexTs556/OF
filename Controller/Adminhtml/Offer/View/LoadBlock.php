@@ -335,6 +335,14 @@ class LoadBlock extends Action
         try {
             $data = $this->getRequest()->getPostValue();
             $offer = $this->getCurrentOffer();
+
+            // Handle offer number auto-generation
+           /* if (!isset($data['offer_number_auto_generate']) && $data['offer_number_auto_generate'] === 'on') {
+                // Set a flag to indicate auto-generation is needed
+                // The actual generation will happen in the service
+                $offer->setData('auto_generate_number', true);
+            }*/
+
             $offer->addData($data);
 
             $offerItems = [];
@@ -345,26 +353,31 @@ class LoadBlock extends Action
                 }
             }
 
-            $offerAttachments = [];
-            // Then process attachments separately
-            $files = $this->getRequest()->getFiles('attachments') ?? [];
-            if ($files && is_array($files) && !empty($files)) {
-                if (isset($data['attachments_info'])) {
-                    $offerAttachments = json_decode($data['attachments_info'], true) ?: [];
-                }
+            $attachmentsFiles = [];
 
-                foreach ($offerAttachments as $index => $item) {
-                    if(isset($files[$index])){
-                        $files['add'][$index]['id'] = $item['id'];
+            $files = (array)($this->getRequest()->getFiles('attachments') ?? []);
+            if (!empty($files)) {
+                $attachmentsInfo = !empty($data['attachments_info'])
+                    ? json_decode($data['attachments_info'], true) ?: []
+                    : [];
+
+                foreach ($attachmentsInfo as $index => $item) {
+                    if (!empty($files[$index])) {
+                        $file = $files[$index];
+                        $file['id'] = $item['id'];
+                        $attachmentsFiles['add'][] = $file;
                     }
                 }
             }
 
-            if (isset($data['delete_attachments'])) {
-                $files['remove'] = json_decode($this->getRequest()->getPostValue('delete_attachments'));
+            if (!empty($data['delete_attachments'])) {
+                $attachmentsFiles['remove'] = json_decode(
+                    $this->getRequest()->getPostValue('delete_attachments'),
+                    true
+                );
             }
 
-            $updatedOffer = $this->offerManagement->updateOffer($offer, $offerItems, $files);
+            $updatedOffer = $this->offerManagement->updateOffer($offer, $offerItems, $attachmentsFiles);
 
 
             // Add history comment if provided

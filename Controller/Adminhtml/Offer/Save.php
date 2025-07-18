@@ -9,17 +9,10 @@ use Magento\Catalog\Helper\Product;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Backend\Model\View\Result\ForwardFactory;
-use OneMoveTwo\Offers\Model\Data\OfferFactory;
-use Magento\Customer\Model\CustomerFactory;
-use Magento\Customer\Model\AddressFactory;
 use Magento\Quote\Model\CustomerManagement;
-use OneMoveTwo\Offers\Model\Admin\OfferCreator;
-
-use Cart2Quote\Quotation\Model\QuoteCartManagement;
-
+use OneMoveTwo\Offers\Model\Converter\QuoteToOffer;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Backend\Model\View\Result\Redirect;
-use OneMoveTwo\Offers\Model\Data\Offer;
 use OneMoveTwo\Offers\Api\OfferRepositoryInterface;
 use OneMoveTwo\Offers\Api\OfferManagementInterface;
 
@@ -31,14 +24,10 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
         Escaper $escaper,
         PageFactory $resultPageFactory,
         ForwardFactory $resultForwardFactory,
-        private readonly OfferFactory $offerFactory,
-        private readonly CustomerFactory $customerFactory,
-        private readonly AddressFactory $addressFactory,
+        private readonly QuoteToOffer $quoteToOfferConverter,
         private readonly CustomerManagement $customerManagement,
-        private readonly OfferCreator $offerCreator,
         private readonly OfferManagementInterface $offerManagement,
         private readonly OfferRepositoryInterface $offerRepository,
-        private readonly QuoteCartManagement $quoteCartManagement
     ) {
         parent::__construct(
             $context,
@@ -52,44 +41,22 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
     /**
      * Based on: \Magento\Sales\Controller\Adminhtml\Order\Create\Save::execute
      */
-    public function execute()
+    public function execute(): Redirect
     {
         /** @var Redirect $resultRedirect */
         $resultRedirect = $this->resultRedirectFactory->create();
         try {
-            // check if the creation of a new customer is allowed
-           /* if (!$this->_authorization->isAllowed('Magento_Customer::manage')
-                && !$this->_getSession()->getCustomerId()
-                && !$this->_getSession()->getQuote()->getCustomerIsGuest()
-            ) {
-                return $this->resultForwardFactory->create()->forward('denied');
-            }*/
-
             $this->_getOrderCreateModel()->getQuote()->setCustomerId($this->_getSession()->getCustomerId());
             $this->_processActionData('save');
-            $paymentData = $this->getRequest()->getPost('payment');
-            if ($paymentData) {
-                $paymentData['checks'] = [
-                    \Magento\Payment\Model\Method\AbstractMethod::CHECK_USE_INTERNAL,
-                    \Magento\Payment\Model\Method\AbstractMethod::CHECK_USE_FOR_COUNTRY,
-                    \Magento\Payment\Model\Method\AbstractMethod::CHECK_USE_FOR_CURRENCY,
-                    \Magento\Payment\Model\Method\AbstractMethod::CHECK_ORDER_TOTAL_MIN_MAX,
-                    \Magento\Payment\Model\Method\AbstractMethod::CHECK_ZERO_TOTAL,
-                ];
-                $this->_getOrderCreateModel()->setPaymentData($paymentData);
-                $this->_getOrderCreateModel()->getQuote()->getPayment()->addData($paymentData);
-            }
 
-            //validate the quotedata
-            $this->_validate();
-
+            $this->validate();
             //prepare the quote
             $quoteCreateModel = $this->_getOrderCreateModel()
                 ->setIsValidate(true)
                 ->importPostData($this->getRequest()->getPost('order'));
 
             //first unset customer is guest before preparing the customer
-            // at this point the customer is created in the backend so it can't be a guest
+            //at this point the customer is created in the backend, so it can't be a guest
             $quoteCreateModel->getQuote()->setCustomerIsGuest('0');
 
             //prepare the customer data
@@ -99,50 +66,28 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
             $customer = $quote->getCustomer();
             if ($customer) {
                 if ($customer->getId() == null) {
-                    //New customer gets created
+                    //A new customer gets created
                     //Customer registration email is also sent by this function
                     $this->customerManagement->populateCustomerInfo($quote);
                     $quoteCreateModel->getQuote()->updateCustomerData($quoteCreateModel->getQuote()->getCustomer());
                 }
             }
 
-            // Set customer quote
             $quoteCreateModel->setQuote($quote);
-
-            //save the quote
             $quoteCreateModel = $quoteCreateModel->saveQuote();
-
-            //get quote id
             $quoteId = $quoteCreateModel->getQuote()->getId();
-
-            //load quote based on quote id (to check later if it already exists)
-            //$offer = $this->offerFactory->create()->load($quoteId);
-
             $offer = $this->offerRepository->getByQuoteId($quoteId);
 
-            //create the quotation quote if it doesn't already exist
             if (!$offer->getId()) {
-                /** @var Offer $offerModel */
-                $offer = $this->offerFactory->create();
-                $offer->setCustomerId($customer->getId())
-                   // ->setOfferNumber('OF.000001')
-                    ->setStoreId((int)$quote->getStoreId())
-                    ->setCustomerEmail($customer->getEmail())
-                    ->setAdminCreatorId((int)$this->offerCreator->getOfferCreator())
-                    ->setCustomerName($customer->getLastname())
-                    ->setCustomerIsGuest(false)
-                    ->setStatus('New')
-                    ->setQuoteId((int)$quoteId);
-
+                $offer = $this->quoteToOfferConverter->convert($quote);
                 $this->offerManagement->createOffer($offer);
-
                 $this->_getSession()->clearStorage();
                 $this->messageManager->addSuccessMessage(__('You created the offer.'));
                 $this->_eventManager->dispatch('admin_offers_offer_create_after', ['offer' => $offer]);
             } else {
                 $this->_getSession()->clearStorage();
                 $this->offerManagement->updateOffer($offer);
-                $this->messageManager->addSuccessMessage(__('You updated the quote.'));
+                $this->messageManager->addSuccessMessage(__('You updated the offer.'));
             }
 
             $this->_getSession()->clearStorage();
@@ -152,13 +97,6 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
             } else {
                 $resultRedirect->setPath('offers/offer/index');
             }
-        } catch (\Magento\Framework\Exception\PaymentException $e) {
-            $this->_getOrderCreateModel()->saveQuote();
-            $message = $e->getMessage();
-            if (!empty($message)) {
-                $this->messageManager->addErrorMessage($message);
-            }
-            $resultRedirect->setPath('offers/offer_create');
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $message = $e->getMessage();
             if (!empty($message)) {
@@ -178,7 +116,7 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
      *
      * @throws LocalizedException
      */
-    protected function _validate(): static
+    private function validate(): void
     {
         $customerId = $this->_getOrderCreateModel()->getSession()->getCustomerId();
         if ($customerId === null) {
@@ -195,7 +133,5 @@ class Save extends \Magento\Sales\Controller\Adminhtml\Order\Create\Save
             }
             throw new LocalizedException(__('Validation is failed.'));
         }
-
-        return $this;
     }
 }

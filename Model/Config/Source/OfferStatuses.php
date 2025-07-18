@@ -19,26 +19,10 @@ readonly class OfferStatuses implements ArrayInterface
         $options = [];
 
         foreach ($statuses as $status) {
-            if (!empty($status['is_active'])) {
-                $options[] = [
-                    'value' => $status['code'],
-                    'label' => $status['label']
-                ];
-            }
-        }
-
-        return $options;
-    }
-
-    public function toArray(): array
-    {
-        $statuses = $this->configProvider->getOfferStatuses();
-        $options = [];
-
-        foreach ($statuses as $status) {
-            if (!empty($status['is_active'])) {
-                $options[$status['code']] = $status['label'];
-            }
+            $options[] = [
+                'value' => $status['code'],
+                'label' => $status['label']
+            ];
         }
 
         return $options;

@@ -4,20 +4,13 @@
     <system>
         <section id="offers_general" translate="label" type="text" sortOrder="100"
                  showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>General Settings</label>
+            <label>Offers</label>
             <tab>OneMoveTwo</tab>
             <resource>OneMoveTwo_Offers::offers</resource>
 
             <group id="general" translate="label" type="text" sortOrder="10"
                    showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General Configuration</label>
-
-                <field id="enabled" translate="label" type="select" sortOrder="10"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Offers Module</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Enable/disable the entire offers functionality</comment>
-                </field>
 
                 <field id="offer_prefix" translate="label" type="text" sortOrder="20"
                        showInDefault="1" showInWebsite="1" showInStore="1">
@@ -39,19 +32,23 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Automatically generate sequential offer numbers</comment>
                 </field>
+
+                <field id="offer_number_template" translate="label" type="text" sortOrder="50"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Offer Number Template</label>
+                    <comment>Template for generating offer numbers. Available placeholders:{prefix},{store},{datetime},{date},{version}</comment>
+                    <validate>required-entry</validate>
+                </field>
             </group>
 
-            <!-- Настройки статусов -->
             <group id="statuses" translate="label" type="text" sortOrder="20"
                    showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Offer Statuses Configuration</label>
 
-                <field id="offer_statuses_grid" translate="label comment" type="text" sortOrder="10"
-                       showInDefault="1">
+                <field id="offer_statuses_grid" translate="label comment" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Offer Statuses</label>
                     <frontend_model>OneMoveTwo\Offers\Block\Adminhtml\System\Config\Form\Field\OfferStatuses</frontend_model>
-                    <backend_model>OneMoveTwo\Offers\Model\Config\Backend\OfferStatuses</backend_model>
-                    <comment><![CDATA[Configure offer statuses and their properties. <br/><strong>Draft</strong> status is required and cannot be deleted.]]></comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                 </field>
 
                 <field id="default_status" translate="label" type="select" sortOrder="20"
@@ -61,16 +58,9 @@
                     <comment>Status assigned to newly created offers</comment>
                 </field>
             </group>
-        </section>
 
-        <!-- Настройки уведомлений -->
-        <section id="offers_notifications" translate="label" type="text" sortOrder="200"
-                 showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Notifications Emails</label>
-            <tab>onemovetwo_offers</tab>
-            <resource>OneMoveTwo_Offers::offers</resource>
 
-            <group id="admin_notifications" translate="label" type="text" sortOrder="10"
+            <group id="admin_notifications" translate="label" type="text" sortOrder="30"
                    showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Admin Notifications</label>
 
@@ -86,22 +76,16 @@
                     <label>Notification Recipients</label>
                     <comment>Comma-separated email addresses for admin notifications</comment>
                     <validate>validate-emails</validate>
-                    <depends>
-                        <field id="notify_on_customer_actions">1</field>
-                    </depends>
                 </field>
 
                 <field id="notification_sender" translate="label" type="select" sortOrder="30"
                        showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Notification Email Sender</label>
                     <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
-                    <depends>
-                        <field id="notify_on_customer_actions">1</field>
-                    </depends>
                 </field>
             </group>
 
-            <group id="customer_emails" translate="label" type="text" sortOrder="20"
+            <group id="customer_emails" translate="label" type="text" sortOrder="40"
                    showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customer Email Settings</label>
 
@@ -119,92 +103,25 @@
                     <comment>Send email to customer when offer status changes</comment>
                 </field>
 
-                <field id="offer_email_template" translate="label" type="select" sortOrder="30"
+               <!-- <field id="template" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Choose Quote Proposal Expired Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                    <tooltip>360029381171</tooltip>
+                </field>
+
+                <field id="new_offer_email_template" translate="label" type="select" sortOrder="30"
                        showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Offer Email Template</label>
+                    <label>New Offer Email Template</label>
                     <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
                     <comment>Email template for offer notifications</comment>
+                </field> -->
+
+                <field id="identity" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Choose Quote Notice Email Receiver</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
                 </field>
             </group>
         </section>
 
-        <!-- Настройки API -->
-        <section id="offers_api" translate="label" type="text" sortOrder="300"
-                 showInDefault="1" showInWebsite="0" showInStore="0">
-            <label>API Configuration</label>
-            <tab>onemovetwo_offers</tab>
-            <resource>OneMoveTwo_Offers::offers</resource>
-
-            <group id="api_settings" translate="label" type="text" sortOrder="10"
-                   showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>API Settings</label>
-
-                <field id="enable_api" translate="label" type="select" sortOrder="10"
-                       showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Enable API Access</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Enable REST API endpoints for offers management</comment>
-                </field>
-
-                <field id="api_rate_limit" translate="label" type="text" sortOrder="20"
-                       showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>API Rate Limit (requests per minute)</label>
-                    <comment>Maximum number of API requests per minute per user (0 = unlimited)</comment>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                    <depends>
-                        <field id="enable_api">1</field>
-                    </depends>
-                </field>
-            </group>
-        </section>
-
-        <!-- Настройки файлов -->
-        <section id="offers_files" translate="label" type="text" sortOrder="400"
-                 showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>File Management</label>
-            <tab>onemovetwo_offers</tab>
-            <resource>OneMoveTwo_Offers::offers</resource>
-
-            <group id="file_settings" translate="label" type="text" sortOrder="10"
-                   showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>File Upload Settings</label>
-
-                <field id="enable_file_upload" translate="label" type="select" sortOrder="10"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable File Attachments</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Allow file attachments to offers</comment>
-                </field>
-
-                <field id="allowed_file_extensions" translate="label" type="text" sortOrder="20"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Allowed File Extensions</label>
-                    <comment>Comma-separated list of allowed file extensions (e.g., jpg,png,pdf,doc)</comment>
-                    <depends>
-                        <field id="enable_file_upload">1</field>
-                    </depends>
-                </field>
-
-                <field id="max_file_size" translate="label" type="text" sortOrder="30"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Maximum File Size (MB)</label>
-                    <comment>Maximum allowed file size in megabytes</comment>
-                    <validate>validate-number validate-greater-than-zero</validate>
-                    <depends>
-                        <field id="enable_file_upload">1</field>
-                    </depends>
-                </field>
-
-                <field id="max_files_per_offer" translate="label" type="text" sortOrder="40"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Maximum Files per Offer</label>
-                    <comment>Maximum number of files that can be attached to one offer (0 = unlimited)</comment>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                    <depends>
-                        <field id="enable_file_upload">1</field>
-                    </depends>
-                </field>
-            </group>
-        </section>
     </system>
 </config>
