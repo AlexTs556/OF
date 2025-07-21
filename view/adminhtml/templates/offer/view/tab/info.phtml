@@ -492,30 +492,39 @@
     </div>
 
     <div class="form-content">
-        <form id="offer_info" action="<?= $escaper->escapeUrl($block->getLoadBlockUrl($block->getOffer()->getEntityId()))?>">
+        <form id="offer_info"
+              action="<?= $escaper->escapeUrl($block->getLoadBlockUrl($block->getOffer()->getEntityId()))?>"
+              data-mage-init='{"offerInfoForm": {
+                  "existingFiles": <?= $escaper->escapeHtml(json_encode($block->getOfferAttachments() ?? [])) ?>,
+                  "mediaUrl": "<?= $escaper->escapeUrl($block->getBaseUrl()) ?>pub/media/",
+                  "offerId": <?= (int)$block->getOffer()->getEntityId() ?>
+              }}'>
 
             <?= $block->getBlockHtml('formkey') ?>
 
-            <input name="offer_id" type="hidden" value="<?= $block->getOffer()->getEntityId()?>">
+            <input name="offer_id" type="hidden" value="<?= (int)$block->getOffer()->getEntityId()?>">
 
             <!-- Version -->
             <div class="form-row">
-                <div class="form-label"><?= __('Version') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Version')) ?></div>
                 <div class="form-field">
                     <select class="form-select form-control-medium">
-                        <option value="1" selected><?= __('Version') ?> 1</option>
-                        <option value="2"><?= __('Version') ?> 2</option>
-                        <option value="3"><?= __('Version') ?> 3</option>
+                        <option value="1" selected><?= $escaper->escapeHtml(__('Version')) ?> 1</option>
+                        <option value="2"><?= $escaper->escapeHtml(__('Version')) ?> 2</option>
+                        <option value="3"><?= $escaper->escapeHtml(__('Version')) ?> 3</option>
                     </select>
                 </div>
             </div>
 
             <!-- Customer -->
             <div class="form-row">
-                <div class="form-label"><?= __('Customer') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Customer')) ?></div>
                 <div class="form-field">
                     <div class="form-field-inline">
-                        <input type="text" class="form-control form-control-wide disabled" value="<?= $block->getCustomerName()?>" readonly>
+                        <input type="text"
+                               class="form-control form-control-wide disabled"
+                               value="<?= $escaper->escapeHtml($block->getCustomerName())?>"
+                               readonly>
                     </div>
                 </div>
             </div>
@@ -524,37 +533,40 @@
 
             <!-- Offer via Email -->
             <div class="form-row">
-                <div class="form-label"><?= __('Offer via Email') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Offer via Email')) ?></div>
                 <div class="form-field">
                     <div class="checkbox-container">
                         <input type="checkbox" name="offer_email" id="offer_email" checked>
-                        <label for="offer_email"><?= __('Yes') ?></label>
+                        <label for="offer_email"><?= $escaper->escapeHtml(__('Yes')) ?></label>
                     </div>
                 </div>
             </div>
 
             <!-- Offer Name -->
             <div class="form-row">
-                <div class="form-label"><?= __('Offer Name') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Offer Name')) ?></div>
                 <div class="form-field">
-                    <input type="text" name="offer_name" class="form-control form-control-wide" placeholder="<?= __('Offer Name') ?>" value="<?= $block->getOffer()?->getOfferName()?>">
+                    <input type="text"
+                           name="offer_name"
+                           class="form-control form-control-wide"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Offer Name')) ?>"
+                           value="<?= $escaper->escapeHtml($block->getOffer()?->getOfferName())?>">
                 </div>
             </div>
 
             <!-- Offer Number -->
             <div class="form-row">
-                <div class="form-label"><?= __('Offer Number') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Offer Number')) ?></div>
                 <div class="form-field">
                     <div class="form-field-inline">
-                        <input
-                            type="text"
-                            class="form-control form-control-wide"
-                            name="offer_number"
-                            id="offer_number"
-                            value="<?= $block->getOffer()?->getOfferNumber()?>">
+                        <input type="text"
+                               class="form-control form-control-wide"
+                               name="offer_number"
+                               id="offer_number"
+                               value="<?= $escaper->escapeHtml($block->getOffer()?->getOfferNumber())?>">
                         <div class="checkbox-container">
                             <input type="checkbox" name="offer_number_auto_generate" id="auto_generate" checked>
-                            <label for="auto_generate"><?= __('Auto generate') ?></label>
+                            <label for="auto_generate"><?= $escaper->escapeHtml(__('Auto generate')) ?></label>
                         </div>
                     </div>
                 </div>
@@ -562,55 +574,54 @@
 
             <!-- Sketches -->
             <div class="form-row">
-                <div class="form-label"><?= __('Sketches') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Sketches')) ?></div>
                 <div class="form-field">
                     <div class="file-list" id="file-list-container">
-                        <!-- Existing files will be populated here by JavaScript -->
+                        <!-- Files will be populated here by JavaScript -->
                     </div>
-                    <button type="button" class="btn btn-secondary"><?= __('Upload Files') ?></button>
+                    <button type="button" class="btn btn-secondary"><?= $escaper->escapeHtml(__('Upload Files')) ?></button>
                 </div>
             </div>
 
             <!-- Consultant -->
             <div class="form-row">
-                <div class="form-label"><?= __('Consultant') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Consultant')) ?></div>
                 <div class="form-field">
-                    <input type="text" name="consultant" class="form-control form-control-wide disabled" value="<?= $block->getCurrentAdminName()?>" readonly>
+                    <input type="text"
+                           name="consultant"
+                           class="form-control form-control-wide disabled"
+                           value="<?= $escaper->escapeHtml($block->getCurrentAdminName())?>"
+                           readonly>
                 </div>
             </div>
 
             <!-- Consultant Comment -->
             <div class="form-row">
-                <div class="form-label"><?= __('Consultant Comment') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Consultant Comment')) ?></div>
                 <div class="form-field">
-                    <textarea name="comment" class="form-control form-control-wide textarea-large" placeholder="<?= __('Comment') ?>"><?= $block->getOffer()->getComment()?></textarea>
+                    <textarea name="comment"
+                              class="form-control form-control-wide textarea-large"
+                              placeholder="<?= $escaper->escapeHtmlAttr(__('Comment')) ?>"><?= $escaper->escapeHtml($block->getOffer()->getComment())?></textarea>
                 </div>
             </div>
 
             <!-- Expiry Date -->
             <div class="form-row">
-                <div class="form-label"><?= __('Expiry Date') ?></div>
+                <div class="form-label"><?= $escaper->escapeHtml(__('Expiry Date')) ?></div>
                 <div class="form-field">
-                    <input type="datetime-local" name="expiry_date" class="form-control datetime-input" value="<?=$block->getOffer()->getExpiryDate()?>">
+                    <input type="datetime-local"
+                           name="expiry_date"
+                           class="form-control datetime-input"
+                           value="<?= $escaper->escapeHtml($block->getOffer()->getExpiryDate())?>">
                 </div>
             </div>
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="button" class="btn btn-primary"><?= __('Save and Continue') ?></button>
+                <button type="button" class="btn btn-primary" data-continue="true">
+                    <?= $escaper->escapeHtml(__('Save and Continue')) ?>
+                </button>
             </div>
         </form>
     </div>
 </div>
-
-<script type="text/x-magento-init">
-    {
-        "*": {
-            "offerInfoForm": {
-                "existingFiles": <?= json_encode($block->getOfferAttachments() ?? []) ?>,
-                "mediaUrl": "<?= $block->getBaseUrl() ?>pub/media/",
-                "offerId": <?= $block->getOffer()->getEntityId() ?>
-            }
-        }
-    }
-</script>

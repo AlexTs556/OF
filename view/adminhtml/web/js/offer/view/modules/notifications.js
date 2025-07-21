@@ -101,6 +101,9 @@ define([
                 var self = this;
                 var parsedResponse = null;
 
+
+                console.log(response);
+
                 // Handle mixed HTML/JS response
                 if (typeof response === 'string') {
                     // Check if response starts with <script> tag (HTML response)

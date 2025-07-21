@@ -5,6 +5,58 @@
 /** @var Magento\Catalog\Helper\Data $catalogHelper */
 
 $catalogHelper =$block->getData('catalogHelper');
+
+
+/*
+ *
+ $item_configuration = [
+    // Основные поля продукта (могут быть изменены админом)
+    'product_name' => 'Custom Product Name',
+    'product_sku' => 'CUSTOM-SKU-123',
+    'product_qty' => 3,
+    'product_price' => 299.99,
+
+    // Комментарии
+    'customer_note' => 'Special requirements from customer',
+    'internal_note' => 'Internal notes for production',
+
+    // Настройки
+    'optional_item' => true,
+    'ignore_inventory' => false,
+
+    // Кастомизация продукта
+    'customization' => [
+        [
+            'attribute' => 'Color',
+            'standard' => 'White',
+            'custom' => 'Deep Blue'
+        ],
+        [
+            'attribute' => 'Size',
+            'standard' => 'Medium',
+            'custom' => 'Large'
+        ]
+    ],
+
+    // Прикрепленные файлы (эскизы)
+    'attachments' => [
+        [
+            'attachment_id' => 1,
+            'file_name' => 'custom_sketch.jpg',
+            'file_path' => 'offers/items/1/custom_sketch.jpg',
+            'file_size' => 154280,
+            'file_type' => 'image/jpeg'
+        ],
+        [
+            'attachment_id' => 2,
+            'file_name' => 'specifications.pdf',
+            'file_path' => 'offers/items/1/specifications.pdf',
+            'file_size' => 89456,
+            'file_type' => 'application/pdf'
+        ]
+    ]
+];
+ * */
 ?>
 
 <?php $items = $block->getItems() ?>
@@ -110,6 +162,8 @@ $catalogHelper =$block->getData('catalogHelper');
                                 'name' => $item->getName(),
                                 'sku' => $item->getSku(),
                                 'qty' => $item->getQty(),
+                                'price' => $item->getPrice(),
+                                'item_configuration' => []//$item->getItemConfiguration() // <- Новое поле
                             ])) ?>'>
                             <a href="javascript:void(0)" class="action-configure-item">Configure</a>
                         </td>
@@ -168,48 +222,287 @@ $catalogHelper =$block->getData('catalogHelper');
                     return;
                 }
 
-                let itemId = configData.id;
+                // Собираем все доступные данные айтема
+                const $itemRow = $(this).closest('tr');
+                const itemData = collectItemData($itemRow, configData);
 
-                // Заполняем попап
-                const $popup = $('#custom-options-popup');
-                $popup.find('.popup-title').text('Configure: ' + configData.name);
-
-                $popup.find('[data-field]').each(function () {
-                    let field = $(this).data('field'); // например, 'name'
-                    let value = configData[field]; // берём значение из объекта
-                    let inputId = 'configure_item_' + field + '_' + itemId;
-
-                    // Обновляем label
-                    $(this).find('label').attr('for', inputId);
-
-                    // Обновляем input
-                    $(this).find('input')
-                        .attr('id', inputId)
-                        .attr('name', 'item[' + itemId + '][' + field + ']')
-                        .val(value);
-                });
-
+                console.log('Opening configure popup with item data:', itemData);
 
                 // Показываем попап
+                showConfigurePopup(itemData);
+            });
+
+            /**
+             * Сбор всех данных айтема из грида
+             */
+            function collectItemData($row, baseConfig) {
+                const itemData = $.extend({}, baseConfig);
+
+                // Собираем данные из различных источников
+
+                // Основные данные из data-product-config
+                itemData.id = baseConfig.id;
+                itemData.name = baseConfig.name;
+                itemData.sku = baseConfig.sku;
+                itemData.qty = baseConfig.qty;
+
+                // Дополнительные данные из элементов строки
+                try {
+                    // Цена из input
+                    const $priceInput = $row.find('input[name*="[custom_price]"]');
+                    if ($priceInput.length) {
+                        itemData.price = parseFloat($priceInput.val()) || 0;
+                    }
+
+                    // Оригинальная цена из колонки
+                    const $originalPriceCell = $row.find('.col-original-price');
+                    if ($originalPriceCell.length) {
+                        const originalPriceText = $originalPriceCell.text().trim();
+                        itemData.original_price = parseFloat(originalPriceText) || 0;
+                    }
+
+                    // URL изображения
+                    const $image = $row.find('.col-thumbnail img');
+                    if ($image.length) {
+                        itemData.image_url = $image.attr('src');
+                    }
+
+                    // Информация о скидке
+                    const $discountCheckbox = $row.find('input[name*="[use_discount]"]');
+                    if ($discountCheckbox.length) {
+                        itemData.use_discount = $discountCheckbox.is(':checked');
+                    }
+
+                    const $discountCell = $row.find('.col-discount');
+                    if ($discountCell.length) {
+                        const discountText = $discountCell.text().trim();
+                        // Извлекаем числовое значение скидки
+                        const discountMatch = discountText.match(/[-]?[\d,]+\.?\d*/);
+                        if (discountMatch) {
+                            itemData.discount_amount = parseFloat(discountMatch[0].replace(',', '')) || 0;
+                        }
+                    }
+
+                    // Общая сумма строки
+                    const $totalCell = $row.find('.col-row-subtotal');
+                    if ($totalCell.length) {
+                        const totalText = $totalCell.text().trim();
+                        const totalMatch = totalText.match(/[\d,]+\.?\d*/);
+                        if (totalMatch) {
+                            itemData.row_total = parseFloat(totalMatch[0].replace(',', '')) || 0;
+                        }
+                    }
+
+                    // Получаем ID оффера из формы
+                    const $form = $row.closest('form');
+                    const offerIdInput = $form.find('input[name="offer_id"]');
+                    if (offerIdInput.length) {
+                        itemData.offer_id = offerIdInput.val();
+                    }
+
+                    // Дополнительная информация о продукте
+                    const $productCell = $row.find('.col-product');
+                    if ($productCell.length) {
+                        // Извлекаем полное название продукта
+                        const $titleSpan = $productCell.find('span[id*="_title"]');
+                        if ($titleSpan.length) {
+                            itemData.full_name = $titleSpan.text().trim();
+                        }
+
+                        // Извлекаем информацию о SKU
+                        const $skuBlock = $productCell.find('.product-sku-block');
+                        if ($skuBlock.length) {
+                            const skuText = $skuBlock.text().replace('SKU:', '').trim();
+                            if (skuText) {
+                                itemData.full_sku = skuText;
+                            }
+                        }
+                    }
+
+                    // ГЛАВНОЕ: Извлекаем конфигурационные данные айтема
+                    // Получаем данные конфигурации айтема
+                    const itemConfiguration = baseConfig.item_configuration;
+
+                    if (itemConfiguration && typeof itemConfiguration === 'object') {
+                        console.log('Found item configuration:', itemConfiguration);
+
+                        // Переопределяем основные поля если они есть в конфигурации
+                        if (itemConfiguration.product_name) {
+                            itemData.name = itemConfiguration.product_name;
+                            itemData.full_name = itemConfiguration.product_name;
+                        }
+
+                        if (itemConfiguration.product_sku) {
+                            itemData.sku = itemConfiguration.product_sku;
+                            itemData.full_sku = itemConfiguration.product_sku;
+                        }
+
+                        if (itemConfiguration.product_qty !== undefined) {
+                            itemData.qty = itemConfiguration.product_qty;
+                        }
+
+                        if (itemConfiguration.product_price !== undefined) {
+                            itemData.price = itemConfiguration.product_price;
+                        }
+
+                        // Комментарии
+                        if (itemConfiguration.customer_note) {
+                            itemData.customer_note = itemConfiguration.customer_note;
+                        }
+
+                        if (itemConfiguration.internal_note) {
+                            itemData.internal_note = itemConfiguration.internal_note;
+                        }
+
+                        // Настройки
+                        if (itemConfiguration.optional_item !== undefined) {
+                            itemData.optional_item = itemConfiguration.optional_item;
+                        }
+
+                        if (itemConfiguration.ignore_inventory !== undefined) {
+                            itemData.ignore_inventory = itemConfiguration.ignore_inventory;
+                        }
+
+                        // Кастомизация
+                        if (itemConfiguration.customization && Array.isArray(itemConfiguration.customization)) {
+                            itemData.customization = itemConfiguration.customization;
+                        }
+
+                        // Файлы/вложения айтема
+                        if (itemConfiguration.attachments && Array.isArray(itemConfiguration.attachments)) {
+                            itemData.existing_files = itemConfiguration.attachments;
+                        }
+
+                        // Сохраняем полную конфигурацию для дальнейшего использования
+                        itemData.item_configuration = itemConfiguration;
+                    }
+
+                    // Если файлов нет в конфигурации - устанавливаем пустой массив
+                    if (!itemData.existing_files) {
+                        itemData.existing_files = [];
+                    }
+
+                    // Информация о стоке (можно получить через AJAX или из дополнительных атрибутов)
+                    itemData.stock_quantity = itemData.stock_quantity || itemData.qty || 0;
+
+                    // URL для получения медиа файлов
+                    itemData.media_url = window.BASE_URL ? window.BASE_URL + 'pub/media/' : '/pub/media/';
+
+                    // URL для сохранения конфигурации
+                    itemData.save_url = 'offers/item/save_item_configure';
+
+                } catch (error) {
+                    console.warn('Error collecting item data:', error);
+                }
+
+                return itemData;
+            }
+
+            /**
+             * Показ попапа конфигурации
+             */
+            function showConfigurePopup(itemData) {
+                const $popup = $('#custom-options-popup');
+
+                if (!$popup.length) {
+                    console.error('Configure popup not found');
+                    return;
+                }
+
+                // Обновляем data-mage-init с данными айтема
+                const formConfig = {
+                    formType: 'product-configure',
+                    itemId: itemData.id,
+                    offerId: itemData.offer_id,
+                    itemData: itemData,
+                    existingFiles: itemData.existing_files || [],
+                    mediaUrl: itemData.media_url,
+                    saveUrl: itemData.save_url
+                };
+
+                // Устанавливаем конфигурацию для формы
+                const $form = $popup.find('#product_configure_form');
+                $form.attr('data-mage-init', JSON.stringify({
+                    'formInitializer': formConfig
+                }));
+
+                // Показываем попап с помощью Magento modal
                 $popup.modal({
-                    title: 'Configure Product',
+                    title: 'Configure Product: ' + itemData.name,
+                    type: 'popup',
+                    responsive: true,
+                    innerScroll: true,
+                    modalClass: 'product-configure-modal',
                     buttons: [{
-                        text: $.mage.__('Close'),
-                        class: 'action-secondary',
+                        text: $.mage.__('Cancel'),
+                        class: 'action-secondary action-dismiss',
                         click: function () {
                             this.closeModal();
                         }
                     }, {
-                        text: $.mage.__('Save'),
+                        text: $.mage.__('Save Configuration'),
                         class: 'action-primary',
                         click: function () {
-                            const formData = $('#custom-options-form').serializeArray();
-                            console.log('Submit options:', formData);
-                            this.closeModal();
+                            // Форма будет отправлена через новую архитектуру
+                            const formInstance = $form.data('formInstance');
+                            if (formInstance && typeof formInstance.submitForm === 'function') {
+                                formInstance.submitForm(false); // false = не продолжать редактирование
+                            } else {
+                                // Fallback - обычная отправка формы
+                                $form.submit();
+                            }
                         }
                     }]
                 }).modal('openModal');
+
+                // Инициализируем форму после показа попапа
+                setTimeout(function() {
+                    $form.mage('formInitializer', formConfig);
+
+                    // Сохраняем ссылку на экземпляр формы для доступа из кнопки
+                    const formWidget = $form.data('mage-formInitializer');
+                    if (formWidget && formWidget.getFormInstance) {
+                        $form.data('formInstance', formWidget.getFormInstance());
+                    }
+                }, 100);
+            }
+
+            /**
+             * Обработка успешной конфигурации айтема
+             */
+            $(document).on('item:configured', function(event, data) {
+                console.log('Item configured successfully:', data);
+
+                // Можно обновить строку в гриде или перезагрузить всю секцию
+                // Например, обновить цену или количество в гриде
+                if (data.itemId) {
+                    updateGridRow(data.itemId, data.response);
+                }
             });
+
+            /**
+             * Обновление строки в гриде после конфигурации
+             */
+            function updateGridRow(itemId, responseData) {
+                // Находим строку по ID айтема
+                const $targetRow = $('td[data-product-config*="id":' + itemId + ']').closest('tr');
+
+                if ($targetRow.length && responseData) {
+                    // Обновляем отображаемые значения если они изменились
+                    // Это зависит от того, что возвращает бэкенд
+
+                    if (responseData.new_price) {
+                        $targetRow.find('input[name*="[custom_price]"]').val(responseData.new_price);
+                    }
+
+                    if (responseData.new_qty) {
+                        $targetRow.find('input[name*="[qty]"]').val(responseData.new_qty);
+                    }
+
+                    // Можно добавить визуальную индикацию того что айтем был сконфигурирован
+                    $targetRow.addClass('item-configured');
+                }
+            }
         });
     </script>
 

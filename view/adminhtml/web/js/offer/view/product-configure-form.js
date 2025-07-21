@@ -5,13 +5,13 @@ define([
     'use strict';
 
     /**
-     * Magento виджет для инициализации offer info формы
-     * Используется через data-mage-init="offerInfoForm"
+     * Magento виджет для инициализации product configure формы
+     * Используется через data-mage-init="productConfigureForm"
      */
     return function(config, element) {
         // Добавляем тип формы в конфигурацию
         config = $.extend({
-            formType: 'offer-info'
+            formType: 'product-configure'
         }, config || {});
 
         // Делегируем инициализацию Form Initializer

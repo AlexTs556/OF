@@ -4,293 +4,606 @@
 ?>
 
 <style>
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Open Sans', Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f5f5f5;
-    }
-
-    .popup-container {
+    /* Стили только для попапа конфигурации */
+    #custom-options-popup .popup-container {
         background: white;
-        border: 2px solid #333;
-        max-width: 800px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        width: 95vw;
+        max-width: 1200px;
+        height: 90vh;
         margin: 0 auto;
-        padding: 20px;
-    }
-
-    .popup-header {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .form-row {
+        padding: 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        font-family: 'Open Sans', Arial, sans-serif;
         display: flex;
-        margin-bottom: 15px;
-        align-items: center;
+        flex-direction: column;
     }
 
-    .form-label {
-        width: 120px;
-        font-weight: 500;
-        margin-right: 15px;
+    #custom-options-popup .popup-header {
+        background: #f5f5f5;
+        border-bottom: 1px solid #ddd;
+        padding: 15px 20px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #303030;
+        border-radius: 3px 3px 0 0;
         flex-shrink: 0;
     }
 
-    .form-input {
-        border: 2px solid #333;
-        padding: 8px 12px;
-        font-size: 14px;
-        width: 200px;
+    #custom-options-popup .popup-content {
+        padding: 20px;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        gap: 20px;
     }
 
-    .form-input-wide {
+    /* Основной контент - левая часть */
+    #custom-options-popup .main-content {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    /* Правая панель с изображением */
+    #custom-options-popup .side-panel {
         width: 300px;
+        flex-shrink: 0;
+        border-left: 1px solid #e5e5e5;
+        padding-left: 20px;
     }
 
-    .stock-info {
-        margin-left: 15px;
-        font-size: 14px;
-        color: #666;
+    #custom-options-popup .product-image-section {
+        text-align: center;
+        margin-bottom: 20px;
     }
 
-    .textarea-input {
-        border: 2px solid #333;
-        padding: 8px 12px;
-        font-size: 14px;
-        width: 300px;
-        height: 80px;
-        resize: vertical;
+    #custom-options-popup .product-image-large {
+        width: 250px;
+        height: 200px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        object-fit: cover;
+        background: #f8f8f8;
     }
 
-    .image-placeholder {
-        width: 100px;
-        height: 80px;
-        border: 2px solid #333;
+    #custom-options-popup .product-image-placeholder-large {
+        width: 250px;
+        height: 200px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #f8f8f8;
-        margin-left: 15px;
-    }
-
-    .image-placeholder::before {
-        content: "✕";
-        font-size: 40px;
         color: #999;
+        font-size: 14px;
     }
 
-    .customization-section {
-        border: 2px solid #e74c3c;
-        margin: 20px 0;
+    /* Двухколоночная раскладка для полей */
+    #custom-options-popup .form-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    #custom-options-popup .form-row {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+    }
+
+    #custom-options-popup .form-row.full-width {
+        grid-column: 1 / -1;
+    }
+
+    #custom-options-popup .form-label {
+        font-weight: 600;
+        color: #303030;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    #custom-options-popup .form-control {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 14px;
+        background: #fff;
+        transition: border-color 0.2s;
+    }
+
+    #custom-options-popup .form-control:focus {
+        outline: none;
+        border-color: #007bdb;
+        box-shadow: 0 0 0 2px rgba(0,123,219,0.2);
+    }
+
+    #custom-options-popup .form-control:read-only {
+        background-color: #f8f8f8;
+        color: #666;
+    }
+
+    #custom-options-popup .textarea-input {
+        border: 1px solid #ccc;
+        padding: 8px 12px;
+        font-size: 14px;
+        width: 100%;
+        min-height: 80px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    #custom-options-popup .textarea-input:focus {
+        outline: none;
+        border-color: #007bdb;
+        box-shadow: 0 0 0 2px rgba(0,123,219,0.2);
+    }
+
+    #custom-options-popup .stock-info {
+        font-size: 13px;
+        color: #666;
+        background: #f0f7ff;
+        padding: 4px 8px;
+        border-radius: 3px;
+        border: 1px solid #b3d9ff;
+        text-align: center;
+        margin-top: 5px;
+    }
+
+    /* File upload styles - компактные */
+    #custom-options-popup .file-section {
+        margin-top: 20px;
+    }
+
+    #custom-options-popup .file-list {
+        font-size: 13px;
+        color: #666;
+        min-height: 100px;
+        max-height: 150px;
+        border: 2px dashed #ddd;
+        border-radius: 3px;
+        padding: 10px;
+        transition: all 0.2s;
+        overflow-y: auto;
+    }
+
+    #custom-options-popup .file-list.drag-over {
+        border-color: #007bdb;
+        background-color: #f8f9ff;
+    }
+
+    #custom-options-popup .file-list.has-files {
+        border-style: solid;
+        background-color: #fafafa;
+    }
+
+    #custom-options-popup .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        margin: 2px 0;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+
+    #custom-options-popup .file-item:hover {
+        background-color: #e9ecef;
+    }
+
+    #custom-options-popup .file-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    #custom-options-popup .file-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #333;
+    }
+
+    #custom-options-popup .file-size {
+        font-size: 11px;
+        color: #6c757d;
+    }
+
+    #custom-options-popup .file-actions {
+        display: flex;
+        gap: 2px;
+    }
+
+    #custom-options-popup .btn-preview,
+    #custom-options-popup .btn-remove,
+    #custom-options-popup .btn-download {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 2px;
+        font-size: 12px;
+        transition: background-color 0.2s;
+    }
+
+    #custom-options-popup .btn-preview:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    #custom-options-popup .btn-remove:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    #custom-options-popup .btn-download:hover {
+        background-color: #28a745;
+        color: white;
+    }
+
+    #custom-options-popup .file-drop-zone {
+        text-align: center;
+        padding: 15px;
+        color: #999;
+        font-style: italic;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    #custom-options-popup .btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 3px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-weight: 500;
+    }
+
+    #custom-options-popup .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #ccc;
+    }
+
+    #custom-options-popup .btn-secondary:hover {
+        background: #e9e9e9;
+    }
+
+    /* Кастомизация - компактная */
+    #custom-options-popup .customization-section {
+        border: 1px solid #e5e5e5;
+        margin: 15px 0;
         background: #f9f9f9;
+        border-radius: 3px;
     }
 
-    .customization-table {
+    #custom-options-popup .customization-header {
+        background: #f0f0f0;
+        padding: 8px 12px;
+        border-bottom: 1px solid #e5e5e5;
+        font-weight: 600;
+        color: #303030;
+        font-size: 14px;
+    }
+
+    #custom-options-popup .customization-table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 13px;
     }
 
-    .customization-table th {
-        background: #d3d3d3;
-        padding: 8px 12px;
-        border: 1px solid #999;
-        font-weight: bold;
+    #custom-options-popup .customization-table th {
+        background: #f5f5f5;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        font-weight: 600;
         text-align: left;
+        color: #303030;
+        font-size: 12px;
     }
 
-    .customization-table td {
-        padding: 8px 12px;
-        border: 1px solid #999;
+    #custom-options-popup .customization-table td {
+        padding: 4px 6px;
+        border: 1px solid #ddd;
         background: white;
     }
 
-    .customization-table input {
-        border: none;
-        background: transparent;
+    #custom-options-popup .customization-table input {
+        border: 1px solid #ccc;
+        background: white;
         width: 100%;
-        padding: 4px;
+        padding: 4px 6px;
+        border-radius: 2px;
+        font-size: 12px;
     }
 
-    .add-row-btn {
+    #custom-options-popup .customization-table input:focus {
+        outline: none;
+        border-color: #007bdb;
+    }
+
+    #custom-options-popup .add-row-btn {
         background: #f9f9f9;
         border: none;
-        padding: 10px;
+        padding: 8px;
         width: 100%;
         text-align: center;
         cursor: pointer;
-        border-top: 1px solid #999;
-        font-weight: bold;
+        border-top: 1px solid #ddd;
+        font-weight: 500;
+        color: #333;
+        font-size: 13px;
+        transition: background-color 0.2s;
     }
 
-    .add-row-btn:hover {
+    #custom-options-popup .add-row-btn:hover {
         background: #eee;
     }
 
-    .sketches-section {
-        margin: 20px 0;
+    #custom-options-popup .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 8px 0;
     }
 
-    .sketch-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .sketch-list li {
-        margin: 5px 0;
-        color: #0066cc;
+    #custom-options-popup .checkbox-container input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
         cursor: pointer;
     }
 
-    .sketch-list li:hover {
-        text-decoration: underline;
-    }
-
-    .upload-btn {
-        border: 2px solid #333;
-        padding: 8px 16px;
-        background: white;
+    #custom-options-popup .checkbox-container label {
         cursor: pointer;
-        margin-left: 15px;
+        font-weight: normal;
+        color: #666;
+        font-size: 13px;
     }
 
-    .upload-btn:hover {
-        background: #f0f0f0;
-    }
-
-    .checkbox-row {
-        margin: 15px 0;
-    }
-
-    .checkbox-row input[type="checkbox"] {
-        margin-right: 8px;
-    }
-
-    .action-buttons {
-        text-align: right;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #ddd;
-    }
-
-    .add-to-quote-btn {
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-
-    .add-to-quote-btn:hover {
-        background: #218838;
-    }
-
-    .remove-row-btn {
+    #custom-options-popup .remove-row-btn {
         background: #dc3545;
         color: white;
         border: none;
         padding: 2px 6px;
         cursor: pointer;
         border-radius: 2px;
-        font-size: 12px;
+        font-size: 11px;
+        transition: background-color 0.2s;
     }
 
-    .remove-row-btn:hover {
+    #custom-options-popup .remove-row-btn:hover {
         background: #c82333;
+    }
+
+    /* Preview modal styles */
+    #custom-options-popup .preview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    #custom-options-popup .preview-content {
+        background: white;
+        border-radius: 8px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow: hidden;
+    }
+
+    #custom-options-popup .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    #custom-options-popup .preview-title {
+        font-weight: 500;
+    }
+
+    #custom-options-popup .preview-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px;
+    }
+
+    #custom-options-popup .preview-body {
+        padding: 16px;
+        display: flex;
+        justify-content: center;
+    }
+
+    #custom-options-popup .preview-image {
+        max-width: 100%;
+        max-height: 70vh;
+        object-fit: contain;
+    }
+
+    @media (max-width: 1024px) {
+        #custom-options-popup .popup-content {
+            flex-direction: column;
+        }
+
+        #custom-options-popup .side-panel {
+            width: 100%;
+            border-left: none;
+            border-top: 1px solid #e5e5e5;
+            padding-left: 0;
+            padding-top: 20px;
+        }
+
+        #custom-options-popup .form-columns {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
 <div id="custom-options-popup" style="display:none;">
-    <div class="popup-content">
-        <h2 class="popup-title"></h2>
-            <div class="form-row" data-field="name">
-                <label
-                    class="form-label"
-                    for="configure_item_name">
-                    <span><?= $escaper->escapeHtml(__('Product Name')) ?></span>
-                </label>
-                <input type="text"
-                       class="form-input form-input-wide"
-                       id="configure_item_name"
-                       name=""
-                       value=""/>
-            </div>
+    <div class="popup-container">
+        <div class="popup-header">
+            <span class="popup-title">Configure Product</span>
+        </div>
 
-            <div class="form-row">
-                <label class="form-label">Stock</label>
-                <span class="stock-info">5 pieces still available</span>
-            </div>
+        <div class="popup-content">
+            <!-- Основной контент - левая часть -->
+            <div class="main-content">
+                <form id="product_configure_form"
+                      action="#"
+                      method="post">
 
-            <div class="form-row">
-                <label class="form-label">Customer Note</label>
-                <textarea class="textarea-input" placeholder="Enter customer note..."></textarea>
-            </div>
+                    <?= $block->getBlockHtml('formkey') ?>
 
-            <div class="form-row">
-                <label class="form-label">Internal Note</label>
-                <textarea class="textarea-input" placeholder="Enter internal note..."></textarea>
-            </div>
+                    <!-- Основные поля в две колонки -->
+                    <div class="form-columns">
+                        <!-- Product Name -->
+                        <div class="form-row">
+                            <div class="form-label"><?= $escaper->escapeHtml(__('Product Name')) ?></div>
+                            <input type="text"
+                                   class="form-control"
+                                   id="configure_item_name"
+                                   name="product_name"
+                                   placeholder="<?= $escaper->escapeHtmlAttr(__('Product Name')) ?>"
+                                   readonly/>
+                        </div>
 
-            <div class="sketches-section">
-                <div class="form-row">
-                    <label class="form-label">Sketches</label>
-                    <div>
-                        <ul class="sketch-list">
-                        </ul>
+                        <!-- SKU -->
+                        <div class="form-row">
+                            <div class="form-label"><?= $escaper->escapeHtml(__('SKU')) ?></div>
+                            <input type="text"
+                                   class="form-control"
+                                   id="configure_item_sku"
+                                   name="product_sku"
+                                   readonly/>
+                            <div class="stock-info" id="stock-info">
+                                <span id="stock-quantity">0</span> <?= $escaper->escapeHtml(__('pieces available')) ?>
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="form-row">
+                            <div class="form-label"><?= $escaper->escapeHtml(__('Quantity')) ?></div>
+                            <input type="number"
+                                   class="form-control"
+                                   id="configure_item_qty"
+                                   name="product_qty"
+                                   min="1"
+                                   step="1"/>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="form-row">
+                            <div class="form-label"><?= $escaper->escapeHtml(__('Price')) ?></div>
+                            <input type="number"
+                                   class="form-control"
+                                   id="configure_item_price"
+                                   name="product_price"
+                                   step="0.01"/>
+                        </div>
+
+                        <!-- Customer Note -->
+                        <div class="form-row full-width">
+                            <div class="form-label"><?= $escaper->escapeHtml(__('Customer Note')) ?></div>
+                            <textarea class="textarea-input"
+                                      name="customer_note"
+                                      id="customer_note"
+                                      placeholder="<?= $escaper->escapeHtmlAttr(__('Enter customer note...')) ?>"></textarea>
+                        </div>
+
+                        <!-- Internal Note -->
+                        <div class="form-row full-width">
+                            <div class="form-label"><?= $escaper->escapeHtml(__('Internal Note')) ?></div>
+                            <textarea class="textarea-input"
+                                      name="internal_note"
+                                      id="internal_note"
+                                      placeholder="<?= $escaper->escapeHtmlAttr(__('Enter internal note...')) ?>"></textarea>
+                        </div>
                     </div>
-                    <button class="upload-btn" onclick="document.getElementById('file-upload').click()">
-                        Upload File
-                    </button>
-                    <input type="file" id="file-upload" style="display: none;" multiple accept="image/*,.pdf" onchange="handleFileUpload(this)" />
+
+                    <!-- Customization Section -->
+                    <div class="customization-section">
+                        <div class="customization-header">
+                            <?= $escaper->escapeHtml(__('Product Customization')) ?>
+                        </div>
+                        <table class="customization-table" id="customization-table">
+                            <thead>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('Attribute')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Standard')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Customization')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Action')) ?></th>
+                            </tr>
+                            </thead>
+                            <tbody id="customization-tbody">
+                            <tr>
+                                <td><input type="text" name="customization[0][attribute]" placeholder="<?= $escaper->escapeHtmlAttr(__('Attribute name')) ?>" /></td>
+                                <td><input type="text" name="customization[0][standard]" placeholder="<?= $escaper->escapeHtmlAttr(__('Standard value')) ?>" /></td>
+                                <td><input type="text" name="customization[0][custom]" placeholder="<?= $escaper->escapeHtmlAttr(__('Custom value')) ?>" /></td>
+                                <td><button type="button" class="remove-row-btn" onclick="removeCustomizationRow(this)">×</button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" class="add-row-btn" onclick="addCustomizationRow()">
+                            <?= $escaper->escapeHtml(__('Add More Customization')) ?> +
+                        </button>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="optional_item" name="optional_item" value="1" checked />
+                        <label for="optional_item"><?= $escaper->escapeHtml(__('Optional Item (can be removed by customer)')) ?></label>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="ignore_inventory" name="ignore_inventory" value="1" checked />
+                        <label for="ignore_inventory"><?= $escaper->escapeHtml(__('Ignore Inventory Management (ignores stock)')) ?></label>
+                    </div>
+
+                    <!-- Hidden fields for item data -->
+                    <input type="hidden" id="configure_item_id" name="item_id" value="" />
+                    <input type="hidden" id="configure_offer_id" name="offer_id" value="" />
+                </form>
+            </div>
+
+            <!-- Правая панель с изображением и файлами -->
+            <div class="side-panel">
+                <!-- Product Image -->
+                <div class="product-image-section">
+                    <div class="product-image-placeholder-large" id="product-image-container">
+                        <span>No Image</span>
+                    </div>
+                </div>
+
+                <!-- Files Section -->
+                <div class="file-section">
+                    <div class="form-label"><?= $escaper->escapeHtml(__('Sketches & Files')) ?></div>
+                    <div class="file-list" id="file-list-container">
+                        <!-- Files will be populated here by JavaScript -->
+                    </div>
+                    <button type="button" class="btn btn-secondary"><?= $escaper->escapeHtml(__('Upload Files')) ?></button>
                 </div>
             </div>
-
-            <div class="customization-section">
-                <table class="customization-table" id="customization-table">
-                    <thead>
-                    <tr>
-                        <th>Attribute</th>
-                        <th>Standard</th>
-                        <th>Customization</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody id="customization-tbody">
-
-                    </tbody>
-                </table>
-                <button class="add-row-btn" onclick="addCustomizationRow()">
-                    Add More Customization +
-                </button>
-            </div>
-
-            <div class="checkbox-row">
-                <label>
-                    <input type="checkbox" checked />
-                    Optional Item (can be removed by customer)
-                </label>
-            </div>
-
-            <div class="checkbox-row">
-                <label>
-                    <input type="checkbox" checked />
-                    Ignore Inventory Management (ignores stock)
-                </label>
-            </div>
+        </div>
     </div>
 </div>
-
 
 <script>
     const MAX_CUSTOMIZATION_ROWS = 20;
@@ -300,17 +613,18 @@
         const rowCount = tbody.children.length;
 
         if (rowCount >= MAX_CUSTOMIZATION_ROWS) {
-            alert(`Maximum ${MAX_CUSTOMIZATION_ROWS} customization rows allowed`);
+            alert('<?= $escaper->escapeJs(__('Maximum %1 customization rows allowed 20')) ?>');
             return;
         }
 
         const newRow = document.createElement('tr');
+        const rowIndex = rowCount;
         newRow.innerHTML = `
-                <td><input type="text" placeholder="Attribute name" /></td>
-                <td><input type="text" placeholder="Standard value" /></td>
-                <td><input type="text" placeholder="Custom value" /></td>
-                <td><button class="remove-row-btn" onclick="removeCustomizationRow(this)">×</button></td>
-            `;
+            <td><input type="text" name="customization[${rowIndex}][attribute]" placeholder="<?= $escaper->escapeHtmlAttr(__('Attribute name')) ?>" /></td>
+            <td><input type="text" name="customization[${rowIndex}][standard]" placeholder="<?= $escaper->escapeHtmlAttr(__('Standard value')) ?>" /></td>
+            <td><input type="text" name="customization[${rowIndex}][custom]" placeholder="<?= $escaper->escapeHtmlAttr(__('Custom value')) ?>" /></td>
+            <td><button type="button" class="remove-row-btn" onclick="removeCustomizationRow(this)">×</button></td>
+        `;
 
         tbody.appendChild(newRow);
     }
@@ -318,57 +632,20 @@
     function removeCustomizationRow(button) {
         const tbody = document.getElementById('customization-tbody');
         if (tbody.children.length <= 1) {
-            alert('At least one customization row is required');
+            alert('<?= $escaper->escapeJs(__('At least one customization row is required')) ?>');
             return;
         }
 
         const row = button.closest('tr');
         row.remove();
-    }
 
-    function handleFileUpload(input) {
-        const files = input.files;
-        const sketchList = document.querySelector('.sketch-list');
-
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const listItem = document.createElement('li');
-            listItem.textContent = file.name;
-            sketchList.appendChild(listItem);
-        }
-
-        // Reset input for future uploads
-        input.value = '';
-    }
-
-    function addToQuote() {
-        // Collect form data
-        const formData = {
-            name: document.querySelector('input[value="Table Set Kitchen Furniture"]').value,
-            price: document.querySelector('input[value="199"]').value,
-            quantity: document.querySelector('input[value="2"]').value,
-            discount: document.querySelector('input[value="5"]').value,
-            customerNote: document.querySelector('textarea').value,
-            internalNote: document.querySelectorAll('textarea')[1].value,
-            customizations: [],
-            isOptional: document.querySelectorAll('input[type="checkbox"]')[0].checked,
-            ignoreInventory: document.querySelectorAll('input[type="checkbox"]')[1].checked
-        };
-
-        // Collect customization data
-        const customizationRows = document.querySelectorAll('#customization-tbody tr');
-        customizationRows.forEach(row => {
+        // Reindex remaining rows
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, index) => {
             const inputs = row.querySelectorAll('input[type="text"]');
-            if (inputs[0].value.trim()) {
-                formData.customizations.push({
-                    attribute: inputs[0].value,
-                    standard: inputs[1].value,
-                    customization: inputs[2].value
-                });
-            }
+            inputs[0].name = `customization[${index}][attribute]`;
+            inputs[1].name = `customization[${index}][standard]`;
+            inputs[2].name = `customization[${index}][custom]`;
         });
-
-        console.log('Form Data:', formData);
-        alert('Item added to quote successfully!');
     }
 </script>

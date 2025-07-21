@@ -22,18 +22,69 @@ define([
             fileIdCounter: 0,
             filesToDelete: [],
             config: {},
+            callbacks: {},
 
             /**
              * Initialize the file handler
              */
-            init: function(config, showErrorCallback) {
+            init: function(config, callbacks) {
                 this.config = config || {};
-                this.showError = showErrorCallback || this.defaultShowError;
+                this.callbacks = callbacks || {};
+
                 this.loadExistingFiles();
                 this.initFileUpload();
                 this.bindEvents();
                 this.updateFileListDisplay();
+
+                // Подписываемся на событие подготовки данных формы
+                this.bindFormEvents();
+
                 return this;
+            },
+
+            /**
+             * Привязка к событиям формы
+             */
+            bindFormEvents: function() {
+                var self = this;
+
+                // Подписываемся на событие подготовки данных
+                if (this.callbacks.on) {
+                    this.callbacks.on('form:prepareData', function(event) {
+                        self.addFilesToFormData(event.data.formData);
+                    });
+                }
+            },
+
+            /**
+             * Добавление файлов в FormData (сохраняем текущую структуру)
+             */
+            addFilesToFormData: function(formData) {
+                var filesData = this.getFilesData();
+
+                // Добавляем файлы как attachments[] (текущая структура)
+                filesData.attachments.forEach(function(attachment) {
+                    formData.append('attachments[]', attachment.file);
+                });
+
+                // Добавляем информацию о вложениях как attachments_info (текущая структура)
+                if (filesData.attachments.length > 0) {
+                    formData.append('attachments_info', JSON.stringify(
+                        filesData.attachments.map(function(att) {
+                            return {
+                                name: att.name,
+                                size: att.size,
+                                type: att.type,
+                                id: att.id
+                            };
+                        })
+                    ));
+                }
+
+                // Добавляем файлы для удаления как delete_attachments (текущая структура)
+                if (filesData.filesToDelete.length > 0) {
+                    formData.append('delete_attachments', JSON.stringify(filesData.filesToDelete));
+                }
             },
 
             /**
@@ -492,7 +543,7 @@ define([
             },
 
             /**
-             * Get files data for form submission
+             * Get files data for form submission (backward compatibility)
              */
             getFilesData: function() {
                 var attachments = [];
@@ -515,10 +566,62 @@ define([
             },
 
             /**
-             * Default error handler if none provided
+             * Show error message
              */
-            defaultShowError: function(message) {
-                console.error(message);
+            showError: function(message) {
+                if (this.callbacks.showError) {
+                    this.callbacks.showError(message);
+                } else {
+                    console.error(message);
+                }
+            },
+
+            /**
+             * Show success message
+             */
+            showSuccess: function(message) {
+                if (this.callbacks.showSuccess) {
+                    this.callbacks.showSuccess(message);
+                } else {
+                    console.log(message);
+                }
+            },
+
+            /**
+             * Trigger event
+             */
+            trigger: function(eventName, data) {
+                if (this.callbacks.trigger) {
+                    this.callbacks.trigger(eventName, data);
+                }
+            },
+
+            /**
+             * Subscribe to event
+             */
+            on: function(eventName, callback) {
+                if (this.callbacks.on) {
+                    this.callbacks.on(eventName, callback);
+                }
+            },
+
+            /**
+             * Cleanup when destroying
+             */
+            destroy: function() {
+                // Remove file input
+                if (this.fileInput && this.fileInput.parentNode) {
+                    this.fileInput.parentNode.removeChild(this.fileInput);
+                }
+
+                // Clear maps
+                this.files.clear();
+                this.existingFiles.clear();
+                this.filesToDelete = [];
+
+                // Remove event listeners
+                $(this.options.fileListContainer).off();
+                $(this.options.fileUploadButton).off();
             }
         };
     };
